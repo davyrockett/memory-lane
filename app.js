@@ -120,22 +120,37 @@ setInterval(function () { if (current === 'welcome') renderWelcome(); }, 60000);
 /* ---------- Song list ---------- */
 var group = lsGet(K.group) || 'all';
 var lastSongId = null;
+// Decade buttons are worked out from each song's year, so they never need editing.
+var DECADES = [
+  { key: 'dec:old', label: 'Before 1940', test: function (y) { return y < 1940; } },
+  { key: 'dec:4050', label: '1940s & 50s', test: function (y) { return y >= 1940 && y < 1960; } },
+  { key: 'dec:60', label: '1960s', test: function (y) { return y >= 1960 && y < 1970; } },
+  { key: 'dec:7080', label: '1970s & 80s', test: function (y) { return y >= 1970; } },
+];
+function decade(key) { return DECADES.filter(function (d) { return d.key === key; })[0]; }
+function allGroupKeys() { return ['all'].concat(groups(), DECADES.map(function (d) { return d.key; })); }
 function listSongs() {
   var s = allSongs();
-  return group === 'all' ? s : s.filter(function (x) { return (x.cats || []).indexOf(group) >= 0; });
+  if (group === 'all') return s;
+  var d = decade(group);
+  if (d) return s.filter(function (x) { var y = Number(x.year); return y && d.test(y); });
+  return s.filter(function (x) { return (x.cats || []).indexOf(group) >= 0; });
 }
 function renderChips() {
   var box = $('chips');
   box.textContent = '';
-  var gs = groups();
-  if (group !== 'all' && gs.indexOf(group) < 0) group = 'all';
-  ['all'].concat(gs).forEach(function (g) {
-    var b = el('button', 'chip', g === 'all' ? 'All songs A–Z' : g);
-    b.setAttribute('aria-pressed', String(g === group));
+  if (allGroupKeys().indexOf(group) < 0) group = 'all';
+  function chip(key, label, cls) {
+    var b = el('button', 'chip' + (cls ? ' ' + cls : ''), label);
+    b.setAttribute('aria-pressed', String(key === group));
     b.tabIndex = -1;
-    b.addEventListener('click', function () { setGroup(g); });
+    b.addEventListener('click', function () { this.blur(); setGroup(key); });
     box.appendChild(b);
-  });
+  }
+  chip('all', 'All songs A–Z');
+  groups().forEach(function (g) { chip(g, g); });
+  box.appendChild(el('span', 'chip-break'));
+  DECADES.forEach(function (d) { chip(d.key, d.label, 'decade'); });
 }
 function setGroup(g) {
   group = g; lsSet(K.group, g);
@@ -184,7 +199,7 @@ function listKeys(e) {
     if (tiles[next]) tiles[next].scrollIntoView({ block: 'nearest' });
   } else if (e.key === 'Tab') {
     e.preventDefault();
-    var gs = ['all'].concat(groups());
+    var gs = allGroupKeys();
     var j = gs.indexOf(group) + (e.shiftKey ? -1 : 1);
     setGroup(gs[(j + gs.length) % gs.length]);
   } else if (e.key === 'Home' || e.key === 'Escape') {
