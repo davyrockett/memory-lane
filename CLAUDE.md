@@ -82,6 +82,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   Past the last section → questions. Autoscroll is still there: Settings → "Moving through the words" (`ml.mode`).
 - iPad/iPhone (v6): usable, not the main target. Phones get one swipeable row of group buttons, a wrapping control bar,
   and the bar never fades on touch screens.
+- Song list by width (v8): over 1100px 3 columns; 560–1100px 2 columns with wrapping group buttons; under 560px 1 column
+  with the group buttons in 2 rows that swipe sideways. Group buttons always show at least 2 rows.
 - **Size button in the section view (v7):** toggles one ↔ two sections per screen (pages 1+2, 3+4…; `ml.per`), labelled
   "Aa Smaller" / "Aa Bigger"; keeps your place when switched. In autoscroll it still cycles the text size.
 
