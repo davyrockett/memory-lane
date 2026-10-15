@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Memory Lane Songbook</title>
+<meta name="description" content="Big sing-along lyrics for the TV, with song facts and conversation starters.">
+<meta name="theme-color" content="#F1F0EC">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>
+  window.APP_VERSION = 'v1';
+  // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
+  (function () {
+    var t = 'light';
+    try { t = localStorage.getItem('ml.theme') || 'light'; } catch (e) {}
+    if (t === 'auto') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    var z = 'normal';
+    try { z = localStorage.getItem('ml.size') || 'normal'; } catch (e) {}
+    document.documentElement.setAttribute('data-size', z);
+  })();
+</script>
+</head>
+<body>
+
+<!-- Welcome -->
+<section id="welcome" class="screen">
+  <div class="welcome-inner">
+    <p class="welcome-day" id="welcome-day"></p>
+    <p class="welcome-date" id="welcome-date"></p>
+    <h1 class="welcome-title">Let’s sing together!</h1>
+    <p class="welcome-app">Memory Lane Songbook</p>
+    <div class="welcome-actions">
+      <button class="btn big primary" id="welcome-go">Choose a song ▸</button>
+      <button class="btn" id="welcome-full">Full screen</button>
+    </div>
+  </div>
+</section>
+
+<!-- Song list -->
+<section id="list" class="screen" hidden>
+  <header class="list-head">
+    <h1 class="list-title">Choose a song</h1>
+    <nav class="chips" id="chips" aria-label="Song groups"></nav>
+    <button class="icon-btn" id="settings-open" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+  <div class="grid" id="grid"></div>
+  <p class="hint" id="list-hint">Arrows move · Enter opens · Tab changes the group · Home for the welcome screen</p>
+</section>
+
+<!-- Title card -->
+<section id="card" class="screen" hidden>
+  <div class="card-inner">
+    <h1 class="card-title" id="card-title"></h1>
+    <p class="card-meta" id="card-meta"></p>
+    <div class="card-panel" id="card-panel" aria-live="polite">
+      <p class="panel-label" id="panel-label">Did you know?</p>
+      <p class="panel-text" id="panel-text"></p>
+      <p class="panel-count" id="panel-count"></p>
+    </div>
+    <div class="card-actions">
+      <button class="btn" id="card-back">◂ Songs <kbd>Esc</kbd></button>
+      <button class="btn" id="card-fact">Another fact <kbd>F</kbd></button>
+      <button class="btn" id="card-listen">Listen for… <kbd>L</kbd></button>
+      <button class="btn big primary" id="card-start">Sing ▸ <kbd>Enter</kbd></button>
+    </div>
+  </div>
+</section>
+
+<!-- Lyrics -->
+<section id="lyrics" class="screen" hidden>
+  <div class="lyrics-window" id="lyrics-window">
+    <div class="lyrics-text" id="lyrics-text"></div>
+  </div>
+  <div class="countdown" id="countdown" hidden></div>
+  <div class="lyrics-badge" id="lyrics-badge" hidden></div>
+  <div class="lyrics-help" id="lyrics-help">Space pause · ↑ faster · ↓ slower · Enter finish · Esc back</div>
+</section>
+
+<!-- After the song -->
+<section id="talk" class="screen" hidden>
+  <div class="talk-inner">
+    <p class="talk-label" id="talk-label">Let’s talk</p>
+    <p class="talk-q" id="talk-q"></p>
+    <p class="talk-count" id="talk-count"></p>
+    <div class="card-actions">
+      <button class="btn" id="talk-prev">◂ Back <kbd>←</kbd></button>
+      <button class="btn" id="talk-next">Next question <kbd>→</kbd></button>
+      <button class="btn big primary" id="talk-done">Next song ▸ <kbd>Enter</kbd></button>
+    </div>
+  </div>
+</section>
+
+<!-- Song editor -->
+<section id="editor" class="screen" hidden>
+  <header class="ed-head">
+    <h1 class="list-title">Edit songs</h1>
+    <span class="ed-sync" id="ed-sync"></span>
+    <button class="btn" id="ed-new">+ New song</button>
+    <button class="btn primary" id="ed-close">Done</button>
+  </header>
+  <div class="ed-body">
+    <ul class="ed-list" id="ed-list"></ul>
+    <form class="ed-form" id="ed-form" autocomplete="off">
+      <p class="ed-empty" id="ed-empty">Pick a song on the left, or add a new one.</p>
+      <div id="ed-fields" hidden>
+        <div class="row">
+          <label class="grow">Title <input id="f-title" required></label>
+        </div>
+        <div class="row">
+          <label class="grow">Artist or show <input id="f-artist"></label>
+          <label class="narrow">Year <input id="f-year" inputmode="numeric"></label>
+          <label class="narrow">Scroll time (seconds) <input id="f-seconds" inputmode="numeric"></label>
+        </div>
+        <fieldset class="ed-cats"><legend>Groups</legend><div id="f-cats"></div>
+          <div class="row"><input id="f-newcat" placeholder="New group name"><button type="button" class="btn" id="f-addcat">Add group</button></div>
+        </fieldset>
+        <label>Fun facts <span class="cap">(one per line, shown on the title card)</span>
+          <textarea id="f-facts" rows="4"></textarea></label>
+        <label>Listen for… <span class="cap">(one per line)</span>
+          <textarea id="f-listen" rows="3"></textarea></label>
+        <label>Questions after the song <span class="cap">(one per line)</span>
+          <textarea id="f-ask" rows="4"></textarea></label>
+        <label>Lyrics <span class="cap">(a blank line between verses; put [Chorus] on its own line at the top of a chorus)</span>
+          <textarea id="f-lyrics" rows="18" class="mono"></textarea></label>
+        <div class="row ed-actions">
+          <button type="button" class="btn danger" id="f-delete">Delete song</button>
+          <span class="cap" id="f-saved"></span>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- Settings -->
+<dialog id="settings" class="sheet">
+  <h2>Settings</h2>
+  <h3>Colors <span class="cap">(press C anywhere to switch)</span></h3>
+  <div class="seg" role="group">
+    <button data-theme-v="light">Cream</button>
+    <button data-theme-v="dark">White on black</button>
+    <button data-theme-v="blue">Yellow on blue</button>
+    <button data-theme-v="auto">Auto</button>
+  </div>
+  <h3>Lyrics size</h3>
+  <div class="seg" role="group">
+    <button data-size-v="smaller">Smaller</button>
+    <button data-size-v="normal">Normal</button>
+    <button data-size-v="bigger">Bigger</button>
+  </div>
+  <h3>Countdown before the words start</h3>
+  <div class="seg" role="group">
+    <button data-count-v="3">3 sec</button>
+    <button data-count-v="5">5 sec</button>
+    <button data-count-v="8">8 sec</button>
+    <button data-count-v="12">12 sec</button>
+  </div>
+  <h3>Songs</h3>
+  <p><button class="btn" id="open-editor">Edit songs</button></p>
+  <div id="sync-on" hidden>
+    <p class="cap" id="sync-status"></p>
+    <p><button class="btn" id="sync-now">Sync now</button> <button class="btn" id="sync-disconnect">Turn off editing here</button></p>
+  </div>
+  <form id="sync-form">
+    <p class="cap">To save song changes for every device, paste your GitHub access key (with memory-lane-data, Contents read and write). Without it, this device just shows the songs.</p>
+    <div class="row"><input id="sync-token" type="password" placeholder="Access key" autocomplete="off"><button class="btn" id="sync-connect">Connect</button></div>
+    <p class="cap problem" id="sync-error" hidden></p>
+  </form>
+  <h3>App</h3>
+  <p class="cap" id="ver-line"></p>
+  <p><button class="btn" id="set-update">Check for updates</button></p>
+  <p><button class="btn primary" id="settings-close">Close</button></p>
+</dialog>
+
+<div class="update-banner" id="update-banner" hidden>
+  A new version is ready. <button class="btn" id="update-go">Update</button>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+/* Memory Lane Songbook. Made for a TV: everything big, high contrast, nothing flashing. */
+
+:root, [data-theme="light"] {
+  --bg: #F1F0EC;
+  --panel: #FFFFFF;
+  --ink: #1E1B18;
+  --soft: #676767;
+  --accent: #F57C14;
+  --accent-ink: #1E1B18;      /* text on an accent button */
+  --chorus: #9A4A00;          /* chorus words: dark orange, still easy to read on cream */
+  --line: #D9D6CF;
+  --focus: #F57C14;
+}
+[data-theme="dark"] {
+  --bg: #000000;
+  --panel: #1A1714;
+  --ink: #FFFFFF;
+  --soft: #A3A3A3;
+  --accent: #FF9433;
+  --accent-ink: #000000;
+  --chorus: #FFB066;
+  --line: #3A3530;
+  --focus: #FF9433;
+}
+[data-theme="blue"] {
+  --bg: #0B2766;
+  --panel: #12337F;
+  --ink: #FFE45C;
+  --soft: #C9D3F0;
+  --accent: #FFE45C;
+  --accent-ink: #0B2766;
+  --chorus: #FFFFFF;
+  --line: #2B4C99;
+  --focus: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
+body {
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-size: clamp(18px, 1.6vw, 34px);
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body.hide-cursor, body.hide-cursor * { cursor: none !important; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: 'Big Shoulders Display', 'Atkinson Hyperlegible', sans-serif; font-weight: 800; margin: 0; letter-spacing: .01em; }
+
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; animation: fade .5s ease; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Buttons ---------- */
+.btn {
+  font: inherit; font-size: .95em; font-weight: 700;
+  color: var(--ink); background: var(--panel);
+  border: 3px solid var(--line); border-radius: 14px;
+  padding: .45em 1em; cursor: pointer;
+}
+.btn.big { font-size: 1.25em; padding: .5em 1.3em; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { color: #B3261E; }
+[data-theme="dark"] .btn.danger, [data-theme="blue"] .btn.danger { color: #FF8A80; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn kbd { font: inherit; font-size: .6em; font-weight: 400; opacity: .7; margin-left: .4em; border: 2px solid currentColor; border-radius: 6px; padding: 0 .35em; vertical-align: .15em; }
+.icon-btn { font-size: 1.6em; background: none; border: 0; color: var(--soft); cursor: pointer; padding: .1em .3em; border-radius: 12px; }
+.icon-btn.alert { color: #D93025; }
+:focus { outline: none; }
+:focus-visible, .btn:focus, .tile:focus, .chip:focus, .icon-btn:focus {
+  outline: 6px solid var(--focus); outline-offset: 4px;
+}
+input:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 1px; }
+
+/* ---------- Welcome ---------- */
+#welcome { align-items: center; justify-content: center; text-align: center; }
+.welcome-day { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 9vw; line-height: 1; margin: 0; }
+.welcome-date { font-size: 3.6vw; margin: .2em 0 0; }
+.welcome-title { font-size: 5.5vw; color: var(--accent); margin-top: 4vh; }
+[data-theme="light"] .welcome-title { color: var(--chorus); }
+.welcome-app { color: var(--soft); font-size: 1.6vw; margin: .5em 0 4vh; letter-spacing: .08em; text-transform: uppercase; }
+.welcome-actions { display: flex; gap: 1em; justify-content: center; align-items: center; }
+
+/* ---------- Song list ---------- */
+.list-head { display: flex; align-items: center; gap: 1.2em; padding: 2.5vh 3vw 1.5vh; }
+.list-title { font-size: 3.4vw; white-space: nowrap; }
+.chips { display: flex; flex-wrap: wrap; gap: .5em; flex: 1; }
+.chip {
+  font: inherit; font-weight: 700; font-size: .9em;
+  border: 3px solid var(--line); background: var(--panel); color: var(--ink);
+  border-radius: 999px; padding: .3em .9em; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.grid {
+  flex: 1; overflow-y: auto; padding: 1.5vh 3vw 3vh;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; align-content: start;
+  scroll-behavior: smooth;
+}
+.tile {
+  text-align: left; font: inherit; color: var(--ink);
+  background: var(--panel); border: 3px solid var(--line); border-radius: 20px;
+  padding: 1.2vw 1.5vw; cursor: pointer; min-height: 9vw;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.tile:hover { border-color: var(--accent); }
+.tile-title { font-family: 'Atkinson Hyperlegible', sans-serif; font-weight: 700; font-size: 2.5vw; line-height: 1.12; }
+.tile-meta { color: var(--soft); font-size: 1.45vw; margin-top: .3em; }
+.hint { color: var(--soft); font-size: .75em; text-align: center; margin: 0; padding: .6em; }
+
+/* ---------- Title card and talk card ---------- */
+#card, #talk { align-items: center; justify-content: center; text-align: center; padding: 4vh 5vw; }
+.card-inner, .talk-inner { width: 100%; max-width: 90vw; display: flex; flex-direction: column; align-items: center; }
+.card-title { font-size: 7vw; line-height: 1; }
+.card-meta { font-size: 2.6vw; color: var(--soft); margin: .4em 0 0; }
+.card-panel {
+  margin: 4vh 0; padding: 3vh 3vw; width: 100%;
+  background: var(--panel); border: 3px solid var(--line); border-radius: 28px;
+  min-height: 30vh; display: flex; flex-direction: column; justify-content: center;
+}
+.card-panel.listen { border-color: var(--accent); }
+.panel-label, .talk-label { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 2.6vw; color: var(--chorus); margin: 0 0 .3em; text-transform: uppercase; letter-spacing: .04em; }
+.panel-text { font-size: 3.6vw; line-height: 1.25; margin: 0; }
+.panel-count, .talk-count { color: var(--soft); font-size: 1.3vw; margin: .8em 0 0; min-height: 1.4em; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 1em; justify-content: center; align-items: center; }
+.talk-q { font-size: 5vw; line-height: 1.2; margin: 2vh 0 0; min-height: 40vh; display: flex; align-items: center; justify-content: center; }
+
+/* ---------- Lyrics ---------- */
+#lyrics { overflow: hidden; }
+.lyrics-window {
+  position: absolute; inset: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 100%);
+}
+.lyrics-text {
+  position: absolute; left: 0; right: 0; top: 0;
+  padding: 0 5vw; text-align: center; will-change: transform;
+  font-weight: 700; font-size: 5.4vw; line-height: 1.22;
+}
+[data-size="smaller"] .lyrics-text { font-size: 4.4vw; }
+[data-size="bigger"] .lyrics-text { font-size: 6.6vw; }
+.lyrics-title { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; color: var(--soft); font-size: .7em; margin: 0 0 .6em; }
+.verse { margin: 0 0 1em; }
+.verse p { margin: 0; }
+.verse.chorus { color: var(--chorus); }
+.chorus-label { font-family: 'Big Shoulders Display', sans-serif; font-size: .45em; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.lyrics-end { color: var(--soft); font-size: .6em; padding-top: .5em; }
+.countdown {
+  position: absolute; right: 3vw; top: 3vh;
+  font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 7vw; line-height: 1;
+  color: var(--bg); background: var(--accent); border-radius: 50%;
+  width: 10vw; height: 10vw; display: flex; align-items: center; justify-content: center;
+}
+[data-theme="blue"] .countdown { color: var(--accent-ink); }
+.lyrics-badge {
+  position: absolute; top: 3vh; left: 50%; transform: translateX(-50%);
+  background: var(--panel); border: 3px solid var(--line); color: var(--ink);
+  border-radius: 14px; padding: .3em .8em; font-weight: 700; font-size: 1.1em;
+}
+.lyrics-help { position: absolute; left: 2vw; top: 2vh; text-align: left; color: var(--soft); font-size: .7em; transition: opacity 1s; }
+.lyrics-help.gone { opacity: 0; }
+
+/* ---------- Editor (used on a computer, so normal-sized) ---------- */
+#editor { font-size: 17px; }
+#editor .list-title { font-size: 34px; }
+.ed-head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 2px solid var(--line); }
+.ed-head .list-title { flex: 1; }
+.ed-sync { color: var(--soft); font-size: 14px; }
+.ed-sync.problem { color: #D93025; }
+.ed-body { flex: 1; display: flex; min-height: 0; }
+.ed-list { list-style: none; margin: 0; padding: 8px; width: 300px; overflow-y: auto; border-right: 2px solid var(--line); }
+.ed-list button { width: 100%; text-align: left; font: inherit; background: none; color: var(--ink); border: 0; border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+.ed-list button[aria-current="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.ed-list .cap { display: block; }
+.ed-form { flex: 1; overflow-y: auto; padding: 16px 24px 60px; }
+.ed-form label { display: block; font-weight: 700; margin: 0 0 14px; }
+.ed-form input, .ed-form textarea, .sheet input {
+  display: block; width: 100%; margin-top: 4px; font: inherit; font-weight: 400;
+  color: var(--ink); background: var(--panel); border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.ed-form textarea { resize: vertical; line-height: 1.4; }
+.mono { font-size: 16px; }
+.row { display: flex; gap: 12px; align-items: flex-end; }
+.row .grow { flex: 1; }
+.row .narrow { width: 190px; }
+.ed-cats { border: 2px solid var(--line); border-radius: 8px; margin: 0 0 14px; padding: 8px 12px 12px; }
+.ed-cats legend { font-weight: 700; padding: 0 4px; }
+#f-cats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 8px; }
+#f-cats label { display: flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; }
+#f-cats input { width: auto; display: inline; margin: 0; }
+.ed-actions { justify-content: space-between; align-items: center; }
+.ed-empty { color: var(--soft); }
+.cap { color: var(--soft); font-weight: 400; font-size: .85em; }
+.cap.ok { color: #2E7D32; }
+.cap.problem { color: #D93025; }
+
+/* ---------- Settings sheet ---------- */
+.sheet {
+  font-size: 18px; color: var(--ink); background: var(--bg);
+  border: 3px solid var(--line); border-radius: 18px; padding: 22px 26px; width: min(620px, 92vw);
+  max-height: 90vh; overflow-y: auto;
+}
+.sheet::backdrop { background: rgba(0, 0, 0, .5); }
+.sheet h2 { font-size: 34px; }
+.sheet h3 { font-size: 22px; margin: 18px 0 8px; }
+.sheet p { margin: 8px 0; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: inherit; font-weight: 700; border: 2px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.sheet .row input { margin: 0; }
+
+.update-banner {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  background: var(--panel); border: 3px solid var(--accent); border-radius: 14px; padding: 10px 16px; font-size: 18px;
+  z-index: 10;
+}
+.toast {
+  position: fixed; left: 50%; top: 20px; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 18px; font-size: 18px; z-index: 11;
+}
+
+/* Phones and small windows (mostly for checking songs, not performing). */
+@media (max-width: 800px) {
+  body { font-size: 16px; }
+  .grid { grid-template-columns: 1fr; }
+  .tile-title { font-size: 22px; }
+  .tile-meta { font-size: 15px; }
+  .list-title { font-size: 26px; }
+  .list-head { flex-wrap: wrap; }
+  .ed-body { flex-direction: column; }
+  .ed-list { width: auto; max-height: 30vh; border-right: 0; border-bottom: 2px solid var(--line); }
+  .row { flex-wrap: wrap; }
+  .row .narrow { width: 45%; }
+}
+.ed-head .btn, .row .btn { white-space: nowrap; }
