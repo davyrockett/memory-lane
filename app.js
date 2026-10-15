@@ -411,6 +411,7 @@ ctrl('c-size', cycleSize);
 ctrl('c-colors', cycleTheme);
 ctrl('c-done', function () { openTalk(ly.song); });
 $('list-colors').addEventListener('click', function () { this.blur(); cycleTheme(); });
+$('list-home').addEventListener('click', function () { this.blur(); openWelcome(); });
 // Clicking the words pauses or resumes, for anyone with a mouse instead of a keyboard.
 $('lyrics-window').addEventListener('click', function () { wake(); togglePlay(); });
 window.addEventListener('resize', function () { if (current === 'lyrics') measure(); });

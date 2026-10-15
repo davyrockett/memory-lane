@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v4';
+  window.APP_VERSION = 'v5';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -34,6 +34,7 @@
   <div class="welcome-inner">
     <p class="welcome-day" id="welcome-day"></p>
     <p class="welcome-date" id="welcome-date"></p>
+    <p class="welcome-hello">Hello! My name is David.</p>
     <h1 class="welcome-title">Let’s sing together!</h1>
     <p class="welcome-app">Memory Lane Songbook</p>
     <div class="welcome-actions">
@@ -48,6 +49,7 @@
   <header class="list-head">
     <nav class="chips" id="chips" aria-label="Song groups"></nav>
     <div class="list-tools">
+      <button class="icon-btn" id="list-home" title="Welcome screen (Home)" aria-label="Welcome screen">⌂</button>
       <button class="icon-btn" id="list-colors" title="Change colors (C)" aria-label="Change colors">◐</button>
       <button class="icon-btn" id="settings-open" title="Settings" aria-label="Settings">⚙</button>
     </div>

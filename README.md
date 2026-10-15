@@ -5,7 +5,7 @@ Big sing-along lyrics for the TV when David performs in memory care. No sound: D
 **Open it:** https://davyrockett.github.io/memory-lane/ (in the TV's web browser; use Full screen on the welcome page).
 
 ## At the TV (keyboard)
-- **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups (Love Songs, Country & Western…).
+- **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups. The ⌂ button (or **Home** / **Esc**) goes back to the welcome screen.
 - **Title card:** **F** another fun fact, **L** "Listen for…", **Enter** to start, **Esc** back. Everything is clickable too.
 - **Lyrics:** after a short countdown the words scroll by themselves. A small bar at the bottom (it fades back while the
   words scroll; move the mouse to bring it up) has: Songs · Restart · Pause/Play · Slower / Faster (with the song's time) ·

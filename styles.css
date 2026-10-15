@@ -75,7 +75,8 @@ input:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 1
 #welcome { align-items: center; justify-content: center; text-align: center; }
 .welcome-day { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 9vw; line-height: 1; margin: 0; }
 .welcome-date { font-size: 3.6vw; margin: .2em 0 0; }
-.welcome-title { font-size: 5.5vw; color: var(--accent); margin-top: 4vh; }
+.welcome-hello { font-size: 4.6vw; font-weight: 700; margin: 5vh 0 0; }
+.welcome-title { font-size: 5.5vw; color: var(--accent); margin-top: 1vh; }
 [data-theme="light"] .welcome-title { color: var(--chorus); }
 .welcome-app { color: var(--soft); font-size: 1.6vw; margin: .5em 0 4vh; letter-spacing: .08em; text-transform: uppercase; }
 .welcome-actions { display: flex; gap: 1em; justify-content: center; align-items: center; }

@@ -51,7 +51,7 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
 
 - **Set-up David chose (2026-10-15):** the TV's own web browser with a keyboard (sometimes a mouse), reliable Wi-Fi,
   medium TV with people sitting close. Several facilities, no per-group tracking. Public GitHub Pages is fine for the lyrics.
-- **Flow:** Welcome (day, date, season) → song list (no heading; big tiles: title, artist · year; "All songs A–Z" + group chips, then a second row of automatic decade chips from each song's year (`DECADES` in app.js),
+- **Flow:** Welcome (day, date, season, "Hello! My name is David."; ⌂ button or Home/Esc on the song list returns here) → song list (no heading; big tiles: title, artist · year; "All songs A–Z" + group chips, then a second row of automatic decade chips from each song's year (`DECADES` in app.js),
   Tab cycles groups) → title card (fun facts, F = next fact; "Listen for…", L = reveal/next; both also clickable) →
   Enter → countdown (Settings: 3/5/8/12 s) → **slow autoscroll** (David's hands are on the guitar, so it scrolls by itself)
   → "Let's talk" questions appear automatically 4 s after the end (←/→ step, Enter = next song).
