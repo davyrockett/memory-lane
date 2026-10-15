@@ -82,4 +82,6 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   Past the last section → questions. Autoscroll is still there: Settings → "Moving through the words" (`ml.mode`).
 - iPad/iPhone (v6): usable, not the main target. Phones get one swipeable row of group buttons, a wrapping control bar,
   and the bar never fades on touch screens.
+- **Size button in the section view (v7):** toggles one ↔ two sections per screen (pages 1+2, 3+4…; `ml.per`), labelled
+  "Aa Smaller" / "Aa Bigger"; keeps your place when switched. In autoscroll it still cycles the text size.
 

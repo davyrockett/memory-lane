@@ -287,7 +287,8 @@ input:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 1
 }
 .step-page { text-align: center; font-weight: 700; line-height: 1.2; max-width: 100%; max-height: 100%; }
 .step-page p { margin: 0; }
-.step-page.chorus { color: var(--chorus); }
+.step-block.chorus { color: var(--chorus); }
+.step-block + .step-block { margin-top: .55em; }
 .step-page .chorus-label { font-size: .42em; margin-bottom: .15em; }
 .step-page.in-fwd { animation: stepFwd .35s ease-out; }
 .step-page.in-back { animation: stepBack .35s ease-out; }

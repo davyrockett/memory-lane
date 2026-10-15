@@ -11,6 +11,7 @@ Big sing-along lyrics for the TV when David performs in memory care. No sound: D
   (a foot pedal or presenter clicker works too). **←** or **Page Up** goes back, **Esc** goes back to the songs. The faded
   line at the bottom shows what's next. After the last section, the questions come up.
   The small bar at the bottom (move the mouse to bring it up): Songs · Restart · Back / Next · Size · Colors · Questions.
+  **Aa Smaller** shows two sections per screen (fewer presses); **Aa Bigger** goes back to one. The app remembers your choice.
   Prefer the old autoscroll? Settings → "Moving through the words" → Scroll by itself.
 - **After the song:** questions to talk about appear by themselves. **→** next question, **Enter** next song,
   or "Sing it again". Songs sung today get a small ✓ on the song list.

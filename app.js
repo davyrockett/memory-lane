@@ -15,7 +15,7 @@ var DATA_FILE = 'data.json';
 var PAGES_COPY = 'https://davyrockett.github.io/memory-lane-data/';
 var K = {
   data: 'ml.data', token: 'ml.sync-token', last: 'ml.sync-last', dirty: 'ml.dirty',
-  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung', mode: 'ml.mode',
+  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung', mode: 'ml.mode', per: 'ml.per',
 };
 var THEMES = ['light', 'dark', 'blue'];
 var SIZES = ['smaller', 'normal', 'bigger'];
@@ -287,10 +287,12 @@ function renderLyrics(song) {
   box.appendChild(el('p', 'lyrics-end', '♪'));
 }
 
-/* One section at a time. Long verses are split into even pages of up to 5 lines, so the words stay huge. */
-var st = { pages: [], i: 0 };
+/* One section at a time. Long verses are split into even pages of up to 5 lines, so the words stay huge.
+   The Size button switches to two sections per screen (pages 1+2, 3+4, …) for smaller text and fewer presses. */
+var st = { pages: [], screens: [], i: 0 };
 var STEP_SIZE = { smaller: 5.4, normal: 6.6, bigger: 8 };   // starting text size (vw); shrinks to fit
 function narrow() { return window.innerWidth < 800; }        // phones and small windows: bigger start, wrapping is fine
+function perScreen() { return lsGet(K.per) === '2' ? 2 : 1; }
 function songPages(song) {
   var pages = [];
   songBlocks(song).forEach(function (b) {
@@ -299,19 +301,36 @@ function songPages(song) {
   });
   return pages.length ? pages : [{ chorus: false, lines: ['(No words for this song yet)'] }];
 }
+// Screens are lists of page numbers: [[0], [1], …] or, two per screen, [[0, 1], [2, 3], …].
+function buildScreens() {
+  var per = perScreen(), out = [];
+  for (var i = 0; i < st.pages.length; i += per) out.push(st.pages.slice(i, i + per).map(function (_, j) { return i + j; }));
+  st.screens = out;
+}
 function openStep(song) {
-  st = { pages: songPages(song), i: 0 };
+  st = { pages: songPages(song), screens: [], i: 0 };
+  buildScreens();
   show('lyrics');
   keepAwake(true);
   $('lyrics-badge').hidden = true;
   renderStep(0);
   wake();
 }
+function togglePerScreen() {
+  var firstPage = st.screens[st.i][0];
+  lsSet(K.per, perScreen() === 2 ? '1' : '2');
+  buildScreens();
+  // Stay on the same words.
+  st.i = st.screens.findIndex ? st.screens.findIndex(function (sc) { return sc.indexOf(firstPage) >= 0; }) : 0;
+  if (st.i < 0) st.i = 0;
+  renderStep(0);
+  badge(perScreen() === 2 ? 'Two sections per screen' : 'One section per screen');
+}
 function fitStep() {
   var page = $('step-page'), stage = $('step-stage');
   var size = (STEP_SIZE[document.documentElement.getAttribute('data-size')] || STEP_SIZE.normal) * (narrow() ? 1.4 : 1);
   page.style.fontSize = size + 'vw';
-  while (size > 2.5 && (page.scrollHeight > stage.clientHeight || page.scrollWidth > stage.clientWidth)) {
+  while (size > 2 && (page.scrollHeight > stage.clientHeight || page.scrollWidth > stage.clientWidth)) {
     size *= 0.94;
     page.style.fontSize = size + 'vw';
   }
@@ -324,29 +343,36 @@ function fitStep() {
 }
 function wrapped(page) {
   var lh = parseFloat(getComputedStyle(page).fontSize) * 1.2;
-  return Array.prototype.some.call(page.children, function (p) { return !p.classList.contains('chorus-label') && p.offsetHeight > lh * 1.5; });
+  return Array.prototype.some.call(page.querySelectorAll('p:not(.chorus-label)'), function (p) { return p.offsetHeight > lh * 1.5; });
 }
 function renderStep(dir) {
-  var n = st.pages.length, p = st.pages[st.i];
+  var n = st.screens.length, screen = st.screens[st.i];
   var page = $('step-page');
   page.textContent = '';
-  page.className = 'step-page' + (p.chorus ? ' chorus' : '');
-  if (p.chorus) page.appendChild(el('p', 'chorus-label', 'Chorus'));
-  p.lines.forEach(function (l) { page.appendChild(el('p', null, l)); });
+  page.className = 'step-page';
+  screen.forEach(function (pi) {
+    var p = st.pages[pi];
+    var block = el('div', 'step-block' + (p.chorus ? ' chorus' : ''));
+    if (p.chorus) block.appendChild(el('p', 'chorus-label', 'Chorus'));
+    p.lines.forEach(function (l) { block.appendChild(el('p', null, l)); });
+    page.appendChild(block);
+  });
   fitStep();
   if (dir) { void page.offsetWidth; page.classList.add(dir > 0 ? 'in-fwd' : 'in-back'); }
   $('step-head').textContent = ly.song.title + '  ·  ' + (st.i + 1) + ' of ' + n;
   var next = $('step-next');
   next.textContent = '';
   next.appendChild(el('span', 'arrow', '▼'));
-  next.appendChild(document.createTextNode(st.i < n - 1 ? st.pages[st.i + 1].lines[0] : 'Questions next'));
+  next.appendChild(document.createTextNode(st.i < n - 1 ? st.pages[st.screens[st.i + 1][0]].lines[0] : 'Questions next'));
   $('progress-fill').style.width = ((st.i + 1) / n * 100) + '%';
   $('c-page').textContent = (st.i + 1) + ' / ' + n;
   $('c-back').disabled = st.i === 0;
   $('c-next').textContent = st.i < n - 1 ? 'Next ▸' : 'Questions ▸';
+  $('c-size').textContent = perScreen() === 2 ? 'Aa Bigger' : 'Aa Smaller';
+  $('c-size').title = perScreen() === 2 ? 'One section per screen, bigger words' : 'Two sections per screen, smaller words';
 }
 function stepGo(d) {
-  var n = st.pages.length;
+  var n = st.screens.length;
   if (d > 0 && st.i >= n - 1) { openTalk(ly.song); return; }
   if (d < 0 && st.i === 0) return;
   st.i += d;
@@ -434,6 +460,7 @@ function openLyrics(song) {
   var step = stepMode();
   $('lyrics').setAttribute('data-mode', step ? 'step' : 'scroll');
   if (step) { pause(); openStep(song); return; }
+  $('c-size').textContent = 'Aa Size'; $('c-size').title = 'Make the words bigger or smaller';
   renderLyrics(song);
   show('lyrics');
   measure();
@@ -470,6 +497,7 @@ function nudge(factor) {
   updateCtrl();
 }
 function cycleSize() {
+  if (stepOn()) { togglePerScreen(); return; }
   var cur = document.documentElement.getAttribute('data-size') || 'normal';
   var next = SIZES[(SIZES.indexOf(cur) + 1) % SIZES.length];
   lsSet(K.size, next);
