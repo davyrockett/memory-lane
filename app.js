@@ -149,7 +149,6 @@ function renderChips() {
   }
   chip('all', 'All songs A–Z');
   groups().forEach(function (g) { chip(g, g); });
-  box.appendChild(el('span', 'chip-break'));
   DECADES.forEach(function (d) { chip(d.key, d.label, 'decade'); });
 }
 function setGroup(g) {
