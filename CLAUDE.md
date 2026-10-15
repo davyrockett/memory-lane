@@ -73,3 +73,13 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   built the starting list; don't rerun it (it would overwrite edits made in the app). Never retype song lyrics by hand:
   read them from David's files with a script.
 - Written for older smart-TV browsers: plain `var`/functions in app.js, no `?.` or `??`.
+- **Lyrics: one section at a time (default since v6, 2026-10).** At his first gig David found autoscroll hard to follow,
+  so now each verse/chorus fills the screen and he presses to go on (he plays from a MacBook on HDMI, mirrored, so he
+  sees the same screen; a foot pedal or presenter clicker works because they send keys). Forward: Space, →, ↓, Page Down,
+  Enter, a click or tap, swipe left; back: ←, ↑, Page Up, Backspace, swipe right; Esc = song list. Held keys don't repeat.
+  Verses over 5 lines are split into even pages; text starts at `STEP_SIZE` vw and shrinks to fit, and shrinks up to 25%
+  more rather than break a line mid-phrase (not on phones). The faded line at the bottom previews the next section.
+  Past the last section → questions. Autoscroll is still there: Settings → "Moving through the words" (`ml.mode`).
+- iPad/iPhone (v6): usable, not the main target. Phones get one swipeable row of group buttons, a wrapping control bar,
+  and the bar never fades on touch screens.
+

@@ -15,7 +15,7 @@ var DATA_FILE = 'data.json';
 var PAGES_COPY = 'https://davyrockett.github.io/memory-lane-data/';
 var K = {
   data: 'ml.data', token: 'ml.sync-token', last: 'ml.sync-last', dirty: 'ml.dirty',
-  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung',
+  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung', mode: 'ml.mode',
 };
 var THEMES = ['light', 'dark', 'blue'];
 var SIZES = ['smaller', 'normal', 'bigger'];
@@ -256,24 +256,119 @@ function cardKeys(e) {
   else if (e.key === 'Enter' && document.activeElement && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); openLyrics(card.song); }
 }
 
-/* ---------- Lyrics (slow autoscroll) ---------- */
+/* ---------- Lyrics ----------
+   Two ways to move through the words (Settings): one section at a time, where David presses a key
+   (or a foot pedal / clicker that acts like one) to go on, or a slow autoscroll. */
 var ly = { song: null, pos: 0, travel: 1, startY: 0, running: false, done: false, last: 0, raf: 0, count: 0, countTimer: 0, endTimer: 0, wake: null };
-function renderLyrics(song) {
-  var box = $('lyrics-text');
-  box.textContent = '';
-  box.appendChild(el('p', 'lyrics-title', song.title));
+function stepMode() { return (lsGet(K.mode) || 'step') === 'step'; }
+function stepOn() { return current === 'lyrics' && $('lyrics').getAttribute('data-mode') === 'step'; }
+// The lyrics as verses: [{ chorus: true/false, lines: [...] }]
+function songBlocks(song) {
+  var out = [];
   String(song.lyrics || '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (block) {
     var ls = lines(block);
     if (!ls.length) return;
     var chorus = /^\[chorus\]$/i.test(ls[0]);
     if (chorus) ls = ls.slice(1);
-    var v = el('div', 'verse' + (chorus ? ' chorus' : ''));
-    if (chorus) v.appendChild(el('p', 'chorus-label', 'Chorus'));
-    ls.forEach(function (l) { v.appendChild(el('p', null, l)); });
+    if (ls.length) out.push({ chorus: chorus, lines: ls });
+  });
+  return out;
+}
+function renderLyrics(song) {
+  var box = $('lyrics-text');
+  box.textContent = '';
+  box.appendChild(el('p', 'lyrics-title', song.title));
+  songBlocks(song).forEach(function (b) {
+    var v = el('div', 'verse' + (b.chorus ? ' chorus' : ''));
+    if (b.chorus) v.appendChild(el('p', 'chorus-label', 'Chorus'));
+    b.lines.forEach(function (l) { v.appendChild(el('p', null, l)); });
     box.appendChild(v);
   });
   box.appendChild(el('p', 'lyrics-end', '♪'));
 }
+
+/* One section at a time. Long verses are split into even pages of up to 5 lines, so the words stay huge. */
+var st = { pages: [], i: 0 };
+var STEP_SIZE = { smaller: 5.4, normal: 6.6, bigger: 8 };   // starting text size (vw); shrinks to fit
+function narrow() { return window.innerWidth < 800; }        // phones and small windows: bigger start, wrapping is fine
+function songPages(song) {
+  var pages = [];
+  songBlocks(song).forEach(function (b) {
+    var n = b.lines.length, parts = Math.ceil(n / 5), per = Math.ceil(n / parts);
+    for (var i = 0; i < n; i += per) pages.push({ chorus: b.chorus, lines: b.lines.slice(i, i + per) });
+  });
+  return pages.length ? pages : [{ chorus: false, lines: ['(No words for this song yet)'] }];
+}
+function openStep(song) {
+  st = { pages: songPages(song), i: 0 };
+  show('lyrics');
+  keepAwake(true);
+  $('lyrics-badge').hidden = true;
+  renderStep(0);
+  wake();
+}
+function fitStep() {
+  var page = $('step-page'), stage = $('step-stage');
+  var size = (STEP_SIZE[document.documentElement.getAttribute('data-size')] || STEP_SIZE.normal) * (narrow() ? 1.4 : 1);
+  page.style.fontSize = size + 'vw';
+  while (size > 2.5 && (page.scrollHeight > stage.clientHeight || page.scrollWidth > stage.clientWidth)) {
+    size *= 0.94;
+    page.style.fontSize = size + 'vw';
+  }
+  // Rather than break a line in the middle of a phrase, shrink a little (down to about 3/4 size).
+  var floor = narrow() ? size : size * 0.75;
+  while (size > floor && wrapped(page)) {
+    size *= 0.95;
+    page.style.fontSize = size + 'vw';
+  }
+}
+function wrapped(page) {
+  var lh = parseFloat(getComputedStyle(page).fontSize) * 1.2;
+  return Array.prototype.some.call(page.children, function (p) { return !p.classList.contains('chorus-label') && p.offsetHeight > lh * 1.5; });
+}
+function renderStep(dir) {
+  var n = st.pages.length, p = st.pages[st.i];
+  var page = $('step-page');
+  page.textContent = '';
+  page.className = 'step-page' + (p.chorus ? ' chorus' : '');
+  if (p.chorus) page.appendChild(el('p', 'chorus-label', 'Chorus'));
+  p.lines.forEach(function (l) { page.appendChild(el('p', null, l)); });
+  fitStep();
+  if (dir) { void page.offsetWidth; page.classList.add(dir > 0 ? 'in-fwd' : 'in-back'); }
+  $('step-head').textContent = ly.song.title + '  ·  ' + (st.i + 1) + ' of ' + n;
+  var next = $('step-next');
+  next.textContent = '';
+  next.appendChild(el('span', 'arrow', '▼'));
+  next.appendChild(document.createTextNode(st.i < n - 1 ? st.pages[st.i + 1].lines[0] : 'Questions next'));
+  $('progress-fill').style.width = ((st.i + 1) / n * 100) + '%';
+  $('c-page').textContent = (st.i + 1) + ' / ' + n;
+  $('c-back').disabled = st.i === 0;
+  $('c-next').textContent = st.i < n - 1 ? 'Next ▸' : 'Questions ▸';
+}
+function stepGo(d) {
+  var n = st.pages.length;
+  if (d > 0 && st.i >= n - 1) { openTalk(ly.song); return; }
+  if (d < 0 && st.i === 0) return;
+  st.i += d;
+  renderStep(d);
+}
+function stepKeys(e) {
+  if (e.repeat) { e.preventDefault(); return; }   // a held key or pedal shouldn't skip ahead
+  var k = e.key;
+  if (k === ' ' || k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === 'Enter') { e.preventDefault(); stepGo(1); }
+  else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); stepGo(-1); }
+  else if (k === 'Escape') { e.preventDefault(); openList(); }
+}
+$('step').addEventListener('click', function () { stepGo(1); });
+// iPad / iPhone: swipe left for the next section, right to go back (a plain tap also goes on).
+var swipe = null;
+$('step').addEventListener('touchstart', function (e) { var t = e.touches[0]; swipe = { x: t.clientX, y: t.clientY }; }, { passive: true });
+$('step').addEventListener('touchend', function (e) {
+  if (!swipe) return;
+  var t = e.changedTouches[0], dx = t.clientX - swipe.x, dy = t.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { e.preventDefault(); stepGo(dx < 0 ? 1 : -1); }
+});
 function measure() {
   var H = window.innerHeight;
   var frac = ly.travel > 1 ? ly.pos / ly.travel : 0;
@@ -323,10 +418,10 @@ function updateCtrl() {
   $('c-speed').textContent = mmss(secondsFor(ly.song));
 }
 var quietTimer;
-function wake() { $('ctrl').classList.remove('quiet'); clearTimeout(quietTimer); if (ly.running) quietSoon(); }
+function wake() { $('ctrl').classList.remove('quiet'); clearTimeout(quietTimer); if (ly.running || stepOn()) quietSoon(); }
 function quietSoon() {
   clearTimeout(quietTimer);
-  quietTimer = setTimeout(function () { if (ly.running) $('ctrl').classList.add('quiet'); }, 3500);
+  quietTimer = setTimeout(function () { if (ly.running || stepOn()) $('ctrl').classList.add('quiet'); }, 3500);
 }
 function badge(text, stay) {
   var b = $('lyrics-badge');
@@ -336,6 +431,9 @@ function badge(text, stay) {
 }
 function openLyrics(song) {
   ly.song = song; ly.pos = 0; ly.travel = 1; ly.done = false;
+  var step = stepMode();
+  $('lyrics').setAttribute('data-mode', step ? 'step' : 'scroll');
+  if (step) { pause(); openStep(song); return; }
   renderLyrics(song);
   show('lyrics');
   measure();
@@ -377,7 +475,7 @@ function cycleSize() {
   lsSet(K.size, next);
   document.documentElement.setAttribute('data-size', next);
   markSettings();
-  if (current === 'lyrics') { measure(); badge('Words: ' + next); }
+  if (current === 'lyrics') { if (stepOn()) fitStep(); else measure(); badge('Words: ' + next); }
 }
 function cycleTheme() {
   var cur = document.documentElement.getAttribute('data-theme');
@@ -385,6 +483,7 @@ function cycleTheme() {
   lsSet(K.theme, next); applyTheme(next);
 }
 function lyricsKeys(e) {
+  if (stepOn()) { stepKeys(e); return; }
   wake();
   if (e.key === ' ') {
     e.preventDefault();
@@ -403,7 +502,9 @@ function lyricsKeys(e) {
 // Control bar buttons (blur after a click, so a later Space or Enter goes to the song, not the button).
 function ctrl(id, fn) { $(id).addEventListener('click', function () { this.blur(); wake(); fn(); }); }
 ctrl('c-close', function () { openList(); });
-ctrl('c-restart', function () { openLyrics(ly.song); });
+ctrl('c-restart', function () { if (stepOn()) { st.i = 0; renderStep(-1); } else openLyrics(ly.song); });
+ctrl('c-back', function () { stepGo(-1); });
+ctrl('c-next', function () { stepGo(1); });
 ctrl('c-play', togglePlay);
 ctrl('c-slower', function () { nudge(1.1); });
 ctrl('c-faster', function () { nudge(0.9); });
@@ -414,7 +515,7 @@ $('list-colors').addEventListener('click', function () { this.blur(); cycleTheme
 $('list-home').addEventListener('click', function () { this.blur(); openWelcome(); });
 // Clicking the words pauses or resumes, for anyone with a mouse instead of a keyboard.
 $('lyrics-window').addEventListener('click', function () { wake(); togglePlay(); });
-window.addEventListener('resize', function () { if (current === 'lyrics') measure(); });
+window.addEventListener('resize', function () { if (current === 'lyrics') { if (stepOn()) fitStep(); else measure(); } });
 var cursorTimer;
 document.addEventListener('mousemove', function () {
   document.body.classList.remove('hide-cursor');
@@ -799,7 +900,8 @@ function applyTheme(t) {
   markSettings();
 }
 function markSettings() {
-  var theme = lsGet(K.theme) || 'light', size = lsGet(K.size) || 'normal', count = lsGet(K.count) || '5';
+  var theme = lsGet(K.theme) || 'light', size = lsGet(K.size) || 'normal', count = lsGet(K.count) || '5', mode = lsGet(K.mode) || 'step';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-mode-v]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.modeV === mode)); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-theme-v]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeV === theme)); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-size-v]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.sizeV === size)); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-count-v]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.countV === count)); });
@@ -809,6 +911,9 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-theme-v]'), functi
 });
 Array.prototype.forEach.call(document.querySelectorAll('[data-size-v]'), function (b) {
   b.addEventListener('click', function () { lsSet(K.size, b.dataset.sizeV); document.documentElement.setAttribute('data-size', b.dataset.sizeV); markSettings(); });
+});
+Array.prototype.forEach.call(document.querySelectorAll('[data-mode-v]'), function (b) {
+  b.addEventListener('click', function () { lsSet(K.mode, b.dataset.modeV); markSettings(); });
 });
 Array.prototype.forEach.call(document.querySelectorAll('[data-count-v]'), function (b) {
   b.addEventListener('click', function () { lsSet(K.count, b.dataset.countV); markSettings(); });

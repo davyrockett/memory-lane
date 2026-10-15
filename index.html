@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v5';
+  window.APP_VERSION = 'v6';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -79,19 +79,31 @@
 </section>
 
 <!-- Lyrics -->
-<section id="lyrics" class="screen" hidden>
-  <div class="lyrics-window" id="lyrics-window">
+<section id="lyrics" class="screen" data-mode="step" hidden>
+  <!-- One section at a time: David presses to move on. -->
+  <div class="step step-only" id="step">
+    <p class="step-head" id="step-head"></p>
+    <div class="step-stage" id="step-stage"><div class="step-page" id="step-page"></div></div>
+    <p class="step-next" id="step-next"></p>
+  </div>
+  <!-- Autoscroll (Settings): the words scroll by themselves. -->
+  <div class="lyrics-window scroll-only" id="lyrics-window">
     <div class="lyrics-text" id="lyrics-text"></div>
   </div>
-  <div class="countdown" id="countdown" hidden></div>
-  <p class="countdown-note" id="countdown-note" hidden>Space to start now</p>
+  <div class="countdown scroll-only" id="countdown" hidden></div>
+  <p class="countdown-note scroll-only" id="countdown-note" hidden>Space to start now</p>
   <div class="lyrics-badge" id="lyrics-badge" hidden></div>
   <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
   <nav class="ctrl" id="ctrl" aria-label="Song controls">
     <button class="cb" id="c-close" title="Back to the song list (Esc)">✕ Songs</button>
     <button class="cb" id="c-restart" title="Start the words again">⟲ Restart</button>
-    <button class="cb wide" id="c-play" title="Pause or play (Space)">❚❚ Pause</button>
-    <span class="cb-group">
+    <span class="cb-group step-only">
+      <button class="cb" id="c-back" title="Back (← or Page Up)">◂ Back</button>
+      <span class="cb-speed" id="c-page"></span>
+      <button class="cb" id="c-next" title="Next (Space, → or Page Down)">Next ▸</button>
+    </span>
+    <button class="cb wide scroll-only" id="c-play" title="Pause or play (Space)">❚❚ Pause</button>
+    <span class="cb-group scroll-only">
       <button class="cb" id="c-slower" title="Slower (↓)">− Slower</button>
       <span class="cb-speed" id="c-speed" title="How long the words take to scroll by"></span>
       <button class="cb" id="c-faster" title="Faster (↑)">+ Faster</button>
@@ -174,7 +186,12 @@
     <button data-size-v="normal">Normal</button>
     <button data-size-v="bigger">Bigger</button>
   </div>
-  <h3>Countdown before the words start</h3>
+  <h3>Moving through the words</h3>
+  <div class="seg" role="group">
+    <button data-mode-v="step">One section at a time (you press)</button>
+    <button data-mode-v="scroll">Scroll by itself</button>
+  </div>
+  <h3>Countdown before scrolling starts</h3>
   <div class="seg" role="group">
     <button data-count-v="3">3 sec</button>
     <button data-count-v="5">5 sec</button>
