@@ -231,3 +231,41 @@ input:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 1
   .row .narrow { width: 45%; }
 }
 .ed-head .btn, .row .btn { white-space: nowrap; }
+
+/* ---------- Song controls (small, at the bottom; fade back while the words scroll) ---------- */
+.ctrl {
+  position: absolute; left: 50%; bottom: 2.2vh; transform: translateX(-50%);
+  display: flex; align-items: center; gap: .35em; flex-wrap: nowrap;
+  background: var(--panel); border: 2px solid var(--line); border-radius: 16px;
+  padding: .3em .45em; font-size: clamp(13px, 1.05vw, 22px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .12);
+  transition: opacity .6s;
+}
+.ctrl.quiet { opacity: .28; }
+.ctrl.quiet:hover, .ctrl:focus-within { opacity: 1; }
+.cb {
+  font: inherit; font-weight: 700; color: var(--ink); background: transparent;
+  border: 2px solid transparent; border-radius: 10px; padding: .35em .7em; cursor: pointer; white-space: nowrap;
+}
+.cb:hover { border-color: var(--line); background: var(--bg); }
+.cb.wide { min-width: 7.2em; }
+.cb.on { background: var(--accent); color: var(--accent-ink); }
+.cb-group { display: flex; align-items: center; border: 2px solid var(--line); border-radius: 12px; }
+.cb-speed { min-width: 3.2em; text-align: center; color: var(--soft); font-variant-numeric: tabular-nums; }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: .7vh; min-height: 4px; background: var(--line); }
+.progress-fill { height: 100%; width: 0; background: var(--accent); }
+.countdown-note { position: absolute; right: 3vw; top: calc(3vh + 10.5vw); width: 10vw; text-align: center; color: var(--soft); font-size: .8em; }
+
+/* Title card: the two panel buttons stay put; the one showing is highlighted. */
+.btn.toggle[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.card-panel { position: relative; }
+.panel-next {
+  position: absolute; right: 1.2vw; bottom: 1vh;
+  font: inherit; font-size: .85em; font-weight: 700; color: var(--soft);
+  background: none; border: 2px solid var(--line); border-radius: 10px; padding: .2em .7em; cursor: pointer;
+}
+.panel-next:hover { color: var(--ink); border-color: var(--accent); }
+
+/* Song list: songs already sung today get a small check. */
+.tile-sung { color: var(--chorus); font-weight: 700; }
+.list-tools { display: flex; align-items: center; gap: .3em; }

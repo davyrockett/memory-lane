@@ -55,8 +55,11 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   Tab cycles groups) → title card (fun facts, F = next fact; "Listen for…", L = reveal/next; both also clickable) →
   Enter → countdown (Settings: 3/5/8/12 s) → **slow autoscroll** (David's hands are on the guitar, so it scrolls by itself)
   → "Let's talk" questions appear automatically 4 s after the end (←/→ step, Enter = next song).
-- Lyrics keys: Space pause/resume (click too), ↑ faster / ↓ slower (10% each, saved per song), ←/→ jump back/forward, Enter
-  finish, Esc back. Scroll time = `seconds` for the whole song; on a device without the key, ↑/↓ tweaks are kept only on
+- Lyrics: small clickable control bar at the bottom (Songs, Restart, Pause/Play, Slower/time/Faster, Size, Colors,
+  Questions) that fades to 28% while scrolling and comes back on mouse move/key/pause; thin progress line at the very bottom.
+  Keys: Space pause/resume (click on the words too), ↑ faster / ↓ slower (10% each, saved per song), ←/→ jump, Enter
+  questions, Esc back to the song list. Talk screen: Enter always = next song; "Sing it again". Songs sung today get
+  "✓ Sung today" on their tile (`ml.sung`, resets each day). Scroll time = `seconds` for the whole song; on a device without the key, ↑/↓ tweaks are kept only on
   that device (`ml.speeds`). David said he'll adjust the speeds himself; the starting values were Claude's guesses.
 - Colors: Cream / White on black / Yellow on blue / Auto; **C** cycles them anywhere. Lyrics size Smaller/Normal/Bigger.
 - Choruses: a section whose first line is `[Chorus]` is drawn in the chorus color with a small "Chorus" label. "(CHORUS)"

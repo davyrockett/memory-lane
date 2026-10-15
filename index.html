@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v1';
+  window.APP_VERSION = 'v2';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -48,7 +48,10 @@
   <header class="list-head">
     <h1 class="list-title">Choose a song</h1>
     <nav class="chips" id="chips" aria-label="Song groups"></nav>
-    <button class="icon-btn" id="settings-open" title="Settings" aria-label="Settings">⚙</button>
+    <div class="list-tools">
+      <button class="icon-btn" id="list-colors" title="Change colors (C)" aria-label="Change colors">◐</button>
+      <button class="icon-btn" id="settings-open" title="Settings" aria-label="Settings">⚙</button>
+    </div>
   </header>
   <div class="grid" id="grid"></div>
   <p class="hint" id="list-hint">Arrows move · Enter opens · Tab changes the group · Home for the welcome screen</p>
@@ -63,11 +66,12 @@
       <p class="panel-label" id="panel-label">Did you know?</p>
       <p class="panel-text" id="panel-text"></p>
       <p class="panel-count" id="panel-count"></p>
+      <button class="panel-next" id="panel-next" title="Show the next one">Next ▸</button>
     </div>
     <div class="card-actions">
       <button class="btn" id="card-back">◂ Songs <kbd>Esc</kbd></button>
-      <button class="btn" id="card-fact">Another fact <kbd>F</kbd></button>
-      <button class="btn" id="card-listen">Listen for… <kbd>L</kbd></button>
+      <button class="btn toggle" id="card-fact">Fun facts <kbd>F</kbd></button>
+      <button class="btn toggle" id="card-listen">Listen for… <kbd>L</kbd></button>
       <button class="btn big primary" id="card-start">Sing ▸ <kbd>Enter</kbd></button>
     </div>
   </div>
@@ -79,8 +83,22 @@
     <div class="lyrics-text" id="lyrics-text"></div>
   </div>
   <div class="countdown" id="countdown" hidden></div>
+  <p class="countdown-note" id="countdown-note" hidden>Space to start now</p>
   <div class="lyrics-badge" id="lyrics-badge" hidden></div>
-  <div class="lyrics-help" id="lyrics-help">Space pause · ↑ faster · ↓ slower · Enter finish · Esc back</div>
+  <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+  <nav class="ctrl" id="ctrl" aria-label="Song controls">
+    <button class="cb" id="c-close" title="Back to the song list (Esc)">✕ Songs</button>
+    <button class="cb" id="c-restart" title="Start the words again">⟲ Restart</button>
+    <button class="cb wide" id="c-play" title="Pause or play (Space)">❚❚ Pause</button>
+    <span class="cb-group">
+      <button class="cb" id="c-slower" title="Slower (↓)">− Slower</button>
+      <span class="cb-speed" id="c-speed" title="How long the words take to scroll by"></span>
+      <button class="cb" id="c-faster" title="Faster (↑)">+ Faster</button>
+    </span>
+    <button class="cb" id="c-size" title="Make the words bigger or smaller">Aa Size</button>
+    <button class="cb" id="c-colors" title="Change colors (C)">◐ Colors</button>
+    <button class="cb" id="c-done" title="Finish and go to the questions (Enter)">Questions ▸</button>
+  </nav>
 </section>
 
 <!-- After the song -->
@@ -90,6 +108,7 @@
     <p class="talk-q" id="talk-q"></p>
     <p class="talk-count" id="talk-count"></p>
     <div class="card-actions">
+      <button class="btn" id="talk-again">⟲ Sing it again</button>
       <button class="btn" id="talk-prev">◂ Back <kbd>←</kbd></button>
       <button class="btn" id="talk-next">Next question <kbd>→</kbd></button>
       <button class="btn big primary" id="talk-done">Next song ▸ <kbd>Enter</kbd></button>

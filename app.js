@@ -15,9 +15,10 @@ var DATA_FILE = 'data.json';
 var PAGES_COPY = 'https://davyrockett.github.io/memory-lane-data/';
 var K = {
   data: 'ml.data', token: 'ml.sync-token', last: 'ml.sync-last', dirty: 'ml.dirty',
-  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group',
+  theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung',
 };
 var THEMES = ['light', 'dark', 'blue'];
+var SIZES = ['smaller', 'normal', 'bigger'];
 
 function $(id) { return document.getElementById(id); }
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -75,6 +76,16 @@ function setSeconds(song, secs) {
     if (rec) { rec.seconds = secs; put(song.id, rec); }
   }
   return secs;
+}
+// Songs sung today get a small check on the song list, so nothing gets sung twice by accident.
+function today() { return new Date().toLocaleDateString('en-CA'); }
+function sungToday() {
+  try { var d = JSON.parse(lsGet(K.sung) || '{}'); return d.date === today() ? d.ids || [] : []; } catch (e) { return []; }
+}
+function markSung(id) {
+  var ids = sungToday();
+  if (ids.indexOf(id) < 0) ids.push(id);
+  lsSet(K.sung, JSON.stringify({ date: today(), ids: ids }));
 }
 function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
 
@@ -136,12 +147,14 @@ function renderList() {
   renderChips();
   var grid = $('grid');
   grid.textContent = '';
+  var sung = sungToday();
   listSongs().forEach(function (song) {
     var t = el('button', 'tile');
     t.dataset.id = song.id;
     t.appendChild(el('span', 'tile-title', song.title));
-    var meta = [song.artist, song.year].filter(Boolean).join(' · ');
-    t.appendChild(el('span', 'tile-meta', meta || ' '));
+    var meta = el('span', 'tile-meta', [song.artist, song.year].filter(Boolean).join(' · ') || ' ');
+    if (sung.indexOf(song.id) >= 0) { meta.appendChild(document.createTextNode(' · ')); meta.appendChild(el('span', 'tile-sung', '✓ Sung today')); }
+    t.appendChild(meta);
     t.addEventListener('click', function () { openCard(song.id); });
     grid.appendChild(t);
   });
@@ -202,10 +215,11 @@ function renderPanel() {
   $('panel-label').textContent = listen ? 'Listen for…' : 'Did you know?';
   $('panel-text').textContent = list.length ? list[i % list.length] : (listen ? 'Just enjoy the song!' : 'A song everyone knows.');
   $('panel-count').textContent = list.length > 1 ? (listen ? 'Listen for ' : 'Fact ') + (i % list.length + 1) + ' of ' + list.length : '';
-  $('card-fact').disabled = !(s.facts || []).length || (!listen && (s.facts || []).length < 2);
-  $('card-listen').disabled = !(s.listen || []).length || (listen && (s.listen || []).length < 2);
-  $('card-fact').firstChild.textContent = listen ? 'Facts ' : 'Another fact ';
-  $('card-listen').firstChild.textContent = listen ? 'Next listen for… ' : 'Listen for… ';
+  $('card-fact').disabled = !(s.facts || []).length;
+  $('card-listen').disabled = !(s.listen || []).length;
+  $('card-fact').setAttribute('aria-pressed', String(!listen));
+  $('card-listen').setAttribute('aria-pressed', String(listen));
+  $('panel-next').style.visibility = list.length > 1 ? 'visible' : 'hidden';
 }
 function cardFact() {
   if (card.mode === 'fact') card.fact++; else card.mode = 'fact';
@@ -217,6 +231,7 @@ function cardListen() {
 }
 $('card-fact').addEventListener('click', cardFact);
 $('card-listen').addEventListener('click', cardListen);
+$('panel-next').addEventListener('click', function () { if (card.mode === 'listen') cardListen(); else cardFact(); });
 $('card-back').addEventListener('click', openList);
 $('card-start').addEventListener('click', function () { openLyrics(card.song); });
 function cardKeys(e) {
@@ -254,14 +269,17 @@ function measure() {
   ly.pos = frac * ly.travel;
   place();
 }
-function place() { $('lyrics-text').style.transform = 'translateY(' + Math.round(ly.startY - ly.pos) + 'px)'; }
+function place() {
+  $('lyrics-text').style.transform = 'translateY(' + Math.round(ly.startY - ly.pos) + 'px)';
+  $('progress-fill').style.width = Math.min(100, ly.pos / ly.travel * 100) + '%';
+}
 function tick(t) {
   if (!ly.running) return;
   var dt = ly.last ? Math.min(0.1, (t - ly.last) / 1000) : 0;
   ly.last = t;
   ly.pos += dt * ly.travel / secondsFor(ly.song);
   if (ly.pos >= ly.travel) {
-    ly.pos = ly.travel; place(); ly.running = false; ly.done = true;
+    ly.pos = ly.travel; place(); ly.running = false; ly.done = true; updateCtrl();
     ly.endTimer = setTimeout(function () { if (current === 'lyrics') openTalk(ly.song); }, 4000);
     return;
   }
@@ -271,10 +289,31 @@ function tick(t) {
 function play() {
   if (ly.done) return;
   ly.running = true; ly.last = 0;
+  $('lyrics-badge').hidden = true;
   cancelAnimationFrame(ly.raf);
   ly.raf = requestAnimationFrame(tick);
+  updateCtrl(); quietSoon();
 }
-function pause() { ly.running = false; cancelAnimationFrame(ly.raf); }
+function pause() { ly.running = false; cancelAnimationFrame(ly.raf); updateCtrl(); wake(); }
+function counting() { return !$('countdown').hidden; }
+function togglePlay() {
+  if (counting()) { startNow(); return; }
+  if (ly.done) { openLyrics(ly.song); return; }
+  if (ly.running) { pause(); badge('Paused', true); } else play();
+}
+// The control bar fades back while the words scroll, and comes back on any mouse move, key or pause.
+function updateCtrl() {
+  var b = $('c-play');
+  b.textContent = counting() ? '▶ Start now' : ly.done ? '⟲ Again' : ly.running ? '❚❚ Pause' : '▶ Play';
+  b.classList.toggle('on', !ly.running && !ly.done);
+  $('c-speed').textContent = mmss(secondsFor(ly.song));
+}
+var quietTimer;
+function wake() { $('ctrl').classList.remove('quiet'); clearTimeout(quietTimer); if (ly.running) quietSoon(); }
+function quietSoon() {
+  clearTimeout(quietTimer);
+  quietTimer = setTimeout(function () { if (ly.running) $('ctrl').classList.add('quiet'); }, 3500);
+}
 function badge(text, stay) {
   var b = $('lyrics-badge');
   b.textContent = text; b.hidden = false;
@@ -287,13 +326,12 @@ function openLyrics(song) {
   show('lyrics');
   measure();
   $('lyrics-badge').hidden = true;
-  var help = $('lyrics-help');
-  help.classList.remove('gone');
-  setTimeout(function () { help.classList.add('gone'); }, 6000);
   keepAwake(true);
   ly.count = Number(lsGet(K.count)) || 5;
   var c = $('countdown');
-  c.textContent = ly.count; c.hidden = false;
+  c.textContent = ly.count; c.hidden = false; $('countdown-note').hidden = false;
+  clearTimeout(ly.endTimer);
+  pause();
   clearInterval(ly.countTimer);
   ly.countTimer = setInterval(function () {
     ly.count--;
@@ -303,43 +341,69 @@ function openLyrics(song) {
 }
 function startNow() {
   clearInterval(ly.countTimer);
-  $('countdown').hidden = true;
+  $('countdown').hidden = true; $('countdown-note').hidden = true;
   play();
 }
 function stopLyrics() {
   pause();
   clearInterval(ly.countTimer);
   clearTimeout(ly.endTimer);
-  $('countdown').hidden = true;
+  $('countdown').hidden = true; $('countdown-note').hidden = true;
+  $('ctrl').classList.remove('quiet');
   keepAwake(false);
 }
 function nudge(factor) {
   var secs = setSeconds(ly.song, secondsFor(ly.song) * factor);
   badge((factor < 1 ? 'Faster ▲' : 'Slower ▼') + '  (whole song ' + mmss(secs) + ')');
+  updateCtrl();
+}
+function cycleSize() {
+  var cur = document.documentElement.getAttribute('data-size') || 'normal';
+  var next = SIZES[(SIZES.indexOf(cur) + 1) % SIZES.length];
+  lsSet(K.size, next);
+  document.documentElement.setAttribute('data-size', next);
+  markSettings();
+  if (current === 'lyrics') { measure(); badge('Words: ' + next); }
+}
+function cycleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  lsSet(K.theme, next); applyTheme(next);
 }
 function lyricsKeys(e) {
-  var counting = !$('countdown').hidden;
+  wake();
   if (e.key === ' ') {
     e.preventDefault();
-    if (counting) { startNow(); return; }
-    if (ly.done) return;
-    if (ly.running) { pause(); badge('Paused', true); } else { $('lyrics-badge').hidden = true; play(); }
+    togglePlay();
   } else if (e.key === 'ArrowUp') { e.preventDefault(); nudge(0.9); }
   else if (e.key === 'ArrowDown') { e.preventDefault(); nudge(1.1); }
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
     e.preventDefault(); ly.pos = Math.max(0, ly.pos - window.innerHeight * 0.25); place();
     if (ly.done) { ly.done = false; clearTimeout(ly.endTimer); play(); }
+    place();
   } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
     e.preventDefault(); ly.pos = Math.min(ly.travel - 1, ly.pos + window.innerHeight * 0.25); place();
   } else if (e.key === 'Enter') { e.preventDefault(); openTalk(ly.song); }
-  else if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); openCard(ly.song.id); }
+  else if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); openList(); }
 }
+// Control bar buttons (blur after a click, so a later Space or Enter goes to the song, not the button).
+function ctrl(id, fn) { $(id).addEventListener('click', function () { this.blur(); wake(); fn(); }); }
+ctrl('c-close', function () { openList(); });
+ctrl('c-restart', function () { openLyrics(ly.song); });
+ctrl('c-play', togglePlay);
+ctrl('c-slower', function () { nudge(1.1); });
+ctrl('c-faster', function () { nudge(0.9); });
+ctrl('c-size', cycleSize);
+ctrl('c-colors', cycleTheme);
+ctrl('c-done', function () { openTalk(ly.song); });
+$('list-colors').addEventListener('click', function () { this.blur(); cycleTheme(); });
 // Clicking the words pauses or resumes, for anyone with a mouse instead of a keyboard.
-$('lyrics-window').addEventListener('click', function () { lyricsKeys({ key: ' ', preventDefault: function () {} }); });
+$('lyrics-window').addEventListener('click', function () { wake(); togglePlay(); });
 window.addEventListener('resize', function () { if (current === 'lyrics') measure(); });
 var cursorTimer;
 document.addEventListener('mousemove', function () {
   document.body.classList.remove('hide-cursor');
+  if (current === 'lyrics') wake();
   clearTimeout(cursorTimer);
   if (current === 'lyrics') cursorTimer = setTimeout(function () { if (current === 'lyrics') document.body.classList.add('hide-cursor'); }, 2000);
 });
@@ -353,10 +417,11 @@ function keepAwake(on) {
 /* ---------- After the song ---------- */
 var talk = { song: null, i: 0 };
 function openTalk(song) {
+  markSung(song.id);
   talk = { song: song, i: 0 };
   show('talk');
   renderTalk();
-  $('talk-next').focus();
+  $('talk-done').focus();
 }
 function renderTalk() {
   var qs = talk.song.ask || [];
@@ -373,16 +438,17 @@ function talkStep(d) {
   var n = (talk.song.ask || []).length;
   talk.i = Math.max(0, Math.min(n - 1, talk.i + d));
   renderTalk();
-  if ($('talk-next').disabled) $('talk-done').focus();
+  $('talk-done').focus();
 }
 $('talk-prev').addEventListener('click', function () { talkStep(-1); });
+$('talk-again').addEventListener('click', function () { openLyrics(talk.song); });
 $('talk-next').addEventListener('click', function () { talkStep(1); });
 $('talk-done').addEventListener('click', openList);
 function talkKeys(e) {
   if (e.key === 'ArrowRight') { e.preventDefault(); talkStep(1); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); talkStep(-1); }
   else if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); openList(); }
-  else if (e.key === 'Enter' && document.activeElement && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); openList(); }
+  else if (e.key === 'Enter') { e.preventDefault(); openList(); }
 }
 
 /* ---------- Keyboard ---------- */
@@ -392,12 +458,7 @@ function typing() {
 }
 document.addEventListener('keydown', function (e) {
   if ($('settings').open || current === 'editor' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === 'c' || e.key === 'C') {
-    var cur = document.documentElement.getAttribute('data-theme');
-    var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
-    lsSet(K.theme, next); applyTheme(next);
-    return;
-  }
+  if (e.key === 'c' || e.key === 'C') { cycleTheme(); return; }
   if (current === 'welcome' && e.key === 'Enter' && document.activeElement === document.body) { e.preventDefault(); openList(); }
   else if (current === 'list') listKeys(e);
   else if (current === 'card') cardKeys(e);

@@ -7,9 +7,12 @@ Big sing-along lyrics for the TV when David performs in memory care. No sound: D
 ## At the TV (keyboard)
 - **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups (Love Songs, Country & Western…).
 - **Title card:** **F** another fun fact, **L** "Listen for…", **Enter** to start, **Esc** back. Everything is clickable too.
-- **Lyrics:** after a short countdown the words scroll by themselves.
-  **Space** pause · **↑** faster · **↓** slower (remembered for that song) · **←/→** jump back/forward · **Enter** finish · **Esc** back.
-- **After the song:** questions to talk about appear by themselves. **→** next question, **Enter** next song.
+- **Lyrics:** after a short countdown the words scroll by themselves. A small bar at the bottom (it fades back while the
+  words scroll; move the mouse to bring it up) has: Songs · Restart · Pause/Play · Slower / Faster (with the song's time) ·
+  Size · Colors · Questions. Keys: **Space** pause · **↑** faster · **↓** slower (remembered for that song) ·
+  **←/→** jump back/forward · **Enter** questions · **Esc** back to the songs.
+- **After the song:** questions to talk about appear by themselves. **→** next question, **Enter** next song,
+  or "Sing it again". Songs sung today get a small ✓ on the song list.
 - **C** switches colors anytime (cream, white on black, yellow on blue).
 
 ## Changing songs
