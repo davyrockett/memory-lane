@@ -292,7 +292,7 @@ function renderLyrics(song) {
 var st = { pages: [], screens: [], i: 0 };
 var STEP_SIZE = { smaller: 5.4, normal: 6.6, bigger: 8 };   // starting text size (vw); shrinks to fit
 function narrow() { return window.innerWidth < 800; }        // phones and small windows: bigger start, wrapping is fine
-function perScreen() { return lsGet(K.per) === '2' ? 2 : 1; }
+function perScreen() { return lsGet(K.per) === '1' ? 1 : 2; }   // two sections per screen unless Bigger was pressed
 function songPages(song) {
   var pages = [];
   songBlocks(song).forEach(function (b) {
@@ -308,6 +308,7 @@ function buildScreens() {
   st.screens = out;
 }
 function openStep(song) {
+  lsSet(K.per, '2');   // every song starts with two sections per screen ("Aa Bigger" switches for this song)
   st = { pages: songPages(song), screens: [], i: 0 };
   buildScreens();
   show('lyrics');

@@ -87,8 +87,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
 - **Size button in the section view (v7):** toggles one ↔ two sections per screen (pages 1+2, 3+4…; `ml.per`), labelled
   "Aa Smaller" / "Aa Bigger"; keeps your place when switched. In autoscroll it still cycles the text size.
 - **TV link (v12, `remote.js`):** the TV's own browser shows the app ("📺 Use as TV screen" on the welcome screen) while
-  David's laptop/phone/iPad ("🎛 Control a TV") shows the same screen and drives it, no cable. Fixed link code `ml`
-  (Settings → TV link can change it; stored `ml.link-code`, role `ml.link-role`, both remembered). Every linked device
+  David's laptop/phone/iPad ("🎛 Control a TV") shows the same screen and drives it, no cable. No code to type
+  (v14, David's request): every device uses the fixed link name `ml` (`LINK_CODE` in remote.js); role `ml.link-role` is remembered. Every linked device
   sends its whole screen state on each change and copies what it receives (last press wins; TV keys work too).
   Relays (free, no account): MQTT over WebSocket, EMQX `broker.emqx.io:8084` then HiveMQ `broker.hivemq.com:8884`
   (no daily limit; state is retained so late joiners catch up, ignored if over 30 min old; the TV publishes signed
@@ -98,4 +98,6 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   dot shows if the link drops. Topics: `davyrockett-memory-lane/<code>/state|tv`, ntfy `davyrockett-memory-lane-<code>`.
   Messages carry only screen/song/section/colors. Tested with two browser tabs (both directions, late join, backup,
   mixed relays); not yet on a real smart TV.
+- **Two sections per screen is the default (v14, David's request):** every song opens with two per screen; "Aa Bigger"
+  switches to one for that song only (`openStep` resets `ml.per` to 2).
 

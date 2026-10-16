@@ -11,8 +11,8 @@
         Wi-Fi, but allows just 250 messages a day per internet connection).
    Messages hold only which screen, song and section is showing. Loaded after app.js and uses its globals. */
 
-var LINK_K = { role: 'ml.link-role', code: 'ml.link-code' };
-var LINK_CODE = 'ml';   // David's fixed code (Settings can change it)
+var LINK_K = { role: 'ml.link-role' };
+var LINK_CODE = 'ml';   // David's fixed link name: nothing to type, every device uses it
 var BROKERS = [
   { host: 'broker.emqx.io', port: 8084, path: '/mqtt' },
   { host: 'broker.hivemq.com', port: 8884, path: '/mqtt' },
@@ -30,7 +30,7 @@ var link = {
   beat: 0,
   sendTimer: 0,
 };
-function linkCode() { return (lsGet(LINK_K.code) || LINK_CODE).trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || LINK_CODE; }
+function linkCode() { return LINK_CODE; }
 function linkBase() { return 'davyrockett-memory-lane/' + linkCode(); }
 function ntfyTopic() { return 'davyrockett-memory-lane-' + linkCode(); }
 function linked() { return link.role === 'tv' || link.role === 'remote'; }
@@ -271,18 +271,12 @@ function renderLink() {
     : (link.role === 'tv' ? 'This device is the TV screen. ' : 'This device is a remote. ')
       + (link.mqttOn ? 'Connected.' : link.ntfyOn ? 'Connected (backup relay).' : 'Connecting…');
   $('link-off').disabled = !linked();
-  $('link-code').value = linkCode();
 }
 $('welcome-tv').addEventListener('click', function () { this.blur(); if (link.role === 'tv') linkStop(); else linkStart('tv'); });
 $('welcome-remote').addEventListener('click', function () { this.blur(); if (link.role === 'remote') linkStop(); else linkStart('remote'); });
 $('link-tv').addEventListener('click', function () { linkStart('tv'); });
 $('link-remote').addEventListener('click', function () { linkStart('remote'); });
 $('link-off').addEventListener('click', linkStop);
-$('link-code').addEventListener('change', function () {
-  lsSet(LINK_K.code, this.value.trim().toLowerCase() || null);
-  if (linked()) linkStart(link.role);
-  renderLink();
-});
 // Reconnect quickly when the screen wakes up or the Wi-Fi comes back.
 document.addEventListener('visibilitychange', function () {
   if (document.visibilityState === 'visible' && linked() && !link.mqttOn) mqttConnect();

@@ -11,7 +11,8 @@ Big sing-along lyrics for the TV when David performs in memory care. No sound: D
   (a foot pedal or presenter clicker works too). **←** or **Page Up** goes back, **Esc** goes back to the songs. The faded
   line at the bottom shows what's next. After the last section, the questions come up.
   The small bar at the bottom (move the mouse to bring it up): Songs · Restart · Back / Next · Size · Colors · Questions.
-  **Aa Smaller** shows two sections per screen (fewer presses); **Aa Bigger** goes back to one. The app remembers your choice.
+  Every song opens with two sections per screen. **Aa Bigger** shows one section at a time for that song;
+  **Aa Smaller** goes back to two.
   Prefer the old autoscroll? Settings → "Moving through the words" → Scroll by itself.
 - **After the song:** questions to talk about appear by themselves. **→** next question, **Enter** next song,
   or "Sing it again". Songs sung today get a small ✓ on the song list.
@@ -33,6 +34,6 @@ Works on iPad and iPhone too: tap or swipe left for the next section, swipe righ
 3. That's it: whatever you do on the laptop shows on the TV within a moment, and the laptop shows the same screen.
    The badge in the top-left corner says **TV linked** when it's working. Both devices remember their job next time.
 
-The link code is **ml** (Settings → TV link). Pressing keys on the TV still works too. If the TV loses the connection,
+There's no code to type. Pressing keys on the TV still works too. If the TV loses the connection,
 it keeps showing the words, with a small red dot in the corner, and reconnects by itself.
 

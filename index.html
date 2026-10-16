@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v13';
+  window.APP_VERSION = 'v14';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -204,10 +204,9 @@
   </div>
   <h3>TV link</h3>
   <p class="cap">Open the app on the TV and press “Use as TV screen”. Open it on your laptop, phone or iPad and press
-    “Control a TV”. Both need the same link code. Whatever you do on one shows on the other.</p>
+    “Control a TV”. Whatever you do on one shows on the other.</p>
   <p class="cap" id="link-status"></p>
   <div class="row">
-    <label class="narrow">Link code <input id="link-code" autocomplete="off" autocapitalize="off"></label>
     <button class="btn" id="link-tv">TV screen</button>
     <button class="btn" id="link-remote">Remote</button>
     <button class="btn" id="link-off">Turn off</button>
