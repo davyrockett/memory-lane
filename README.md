@@ -26,3 +26,13 @@ To save changes for every device, paste your GitHub access key in Settings (it n
 Double-click **Start Memory Lane.command**.
 
 Works on iPad and iPhone too: tap or swipe left for the next section, swipe right to go back.
+
+## TV link (laptop controls the TV, no cable)
+1. On the TV's web browser, open the app and press **📺 Use as TV screen** on the welcome page.
+2. On your laptop (or phone / iPad), open the app and press **🎛 Control a TV**.
+3. That's it: whatever you do on the laptop shows on the TV within a moment, and the laptop shows the same screen.
+   The badge in the top-left corner says **TV linked** when it's working. Both devices remember their job next time.
+
+The link code is **ml** (Settings → TV link). Pressing keys on the TV still works too. If the TV loses the connection,
+it keeps showing the words, with a small red dot in the corner, and reconnects by itself.
+

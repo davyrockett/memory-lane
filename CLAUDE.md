@@ -86,4 +86,16 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   with the group buttons in 2 rows that swipe sideways. Group buttons always show at least 2 rows.
 - **Size button in the section view (v7):** toggles one ↔ two sections per screen (pages 1+2, 3+4…; `ml.per`), labelled
   "Aa Smaller" / "Aa Bigger"; keeps your place when switched. In autoscroll it still cycles the text size.
+- **TV link (v12, `remote.js`):** the TV's own browser shows the app ("📺 Use as TV screen" on the welcome screen) while
+  David's laptop/phone/iPad ("🎛 Control a TV") shows the same screen and drives it, no cable. Fixed link code `ml`
+  (Settings → TV link can change it; stored `ml.link-code`, role `ml.link-role`, both remembered). Every linked device
+  sends its whole screen state on each change and copies what it receives (last press wins; TV keys work too).
+  Relays (free, no account): MQTT over WebSocket, EMQX `broker.emqx.io:8084` then HiveMQ `broker.hivemq.com:8884`
+  (no daily limit; state is retained so late joiners catch up, ignored if over 30 min old; the TV publishes signed
+  `on:<id>`/`off:<id>` presence + last will so the remote shows "TV linked"). Backup when MQTT can't connect: ntfy.sh
+  over port 443 (only 250 messages/day per IP, checked 2026-10-16 at ntfy.sh/v1/account). Library: `vendor/paho-mqtt.min.js`
+  (Paho 1.1.0, cdnjs). Linked devices always use the section view. On the TV the control bar hides and only a small red
+  dot shows if the link drops. Topics: `davyrockett-memory-lane/<code>/state|tv`, ntfy `davyrockett-memory-lane-<code>`.
+  Messages carry only screen/song/section/colors. Tested with two browser tabs (both directions, late join, backup,
+  mixed relays); not yet on a real smart TV.
 
