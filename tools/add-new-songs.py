@@ -93,11 +93,12 @@ def pasted_songs():
     if not PASTED.exists():
         return {}
     text = PASTED.read_text().replace("\r", "")
-    titles = {NEW[k]["title"].lower(): k for k in NEW}
+    # Titles must match exactly, capitals included: "In the still of the night" is also a line of that song.
+    titles = {NEW[k]["title"]: k for k in NEW}
     found, cur, buf = {}, None, []
     for line in text.split("\n"):
-        key = titles.get(line.strip().lower())
-        if key or line.strip().lower() in ("home on the range", "lyrics"):
+        key = titles.get(line.strip())
+        if key or line.strip() in ("Home on the Range", "Lyrics"):
             if cur: found[cur] = buf
             cur, buf = key, []
             continue
