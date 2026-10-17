@@ -92,7 +92,7 @@ function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (
 /* ---------- Screens ---------- */
 var current = 'welcome';
 function show(name) {
-  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor'].forEach(function (n) { $(n).hidden = n !== name; });
+  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor', 'slides'].forEach(function (n) { $(n).hidden = n !== name; });
   if (current === 'lyrics' && name !== 'lyrics') stopLyrics();
   current = name;
   document.body.classList.remove('hide-cursor');
@@ -319,16 +319,25 @@ function cardKeys(e) {
 var ly = { song: null, pos: 0, travel: 1, startY: 0, running: false, done: false, last: 0, raf: 0, count: 0, countTimer: 0, endTimer: 0, wake: null };
 function stepMode() { return (lsGet(K.mode) || 'step') === 'step'; }
 function stepOn() { return current === 'lyrics' && $('lyrics').getAttribute('data-mode') === 'step'; }
-// The lyrics as verses: [{ chorus: true/false, lines: [...] }]
-function songBlocks(song) {
+// Text as verses: [{ chorus: true/false, lines: [...] }]. A blank line starts a new verse; a "[Chorus]" line marks one.
+function textBlocks(text) {
   var out = [];
-  String(song.lyrics || '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (block) {
+  String(text || '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (block) {
     var ls = lines(block);
     if (!ls.length) return;
     var chorus = /^\[chorus\]$/i.test(ls[0]);
     if (chorus) ls = ls.slice(1);
     if (ls.length) out.push({ chorus: chorus, lines: ls });
   });
+  return out;
+}
+// Songs David has laid out in the slide editor carry their own slides (one text per screen).
+function customSlides(song) { return song && Array.isArray(song.slides) && song.slides.length ? song.slides : null; }
+function songBlocks(song) {
+  var sl = customSlides(song);
+  if (!sl) return textBlocks(song.lyrics);
+  var out = [];
+  sl.forEach(function (t) { out = out.concat(textBlocks(t)); });
   return out;
 }
 function renderLyrics(song) {
@@ -346,7 +355,7 @@ function renderLyrics(song) {
 
 /* One section at a time. Long verses are split into even pages of up to 5 lines, so the words stay huge.
    The Size button switches to two sections per screen (pages 1+2, 3+4, …) for smaller text and fewer presses. */
-var st = { pages: [], screens: [], i: 0 };
+var st = { pages: [], screens: [], i: 0, custom: null };
 var STEP_SIZE = { smaller: 5.4, normal: 6.6, bigger: 8 };   // starting text size (vw); shrinks to fit
 function narrow() { return window.innerWidth < 800; }        // phones and small windows: bigger start, wrapping is fine
 function perScreen() { return lsGet(K.per) === '1' ? 1 : 2; }   // two sections per screen unless Bigger was pressed
@@ -359,14 +368,26 @@ function songPages(song) {
   return pages.length ? pages : [{ chorus: false, lines: ['(No words for this song yet)'] }];
 }
 // Screens are lists of page numbers: [[0], [1], …] or, two per screen, [[0, 1], [2, 3], …].
+// A song with its own slides: one screen per slide, whatever the Size button says (it only changes text size).
 function buildScreens() {
+  if (st.custom) { st.screens = st.custom.slice(); return; }
   var per = perScreen(), out = [];
   for (var i = 0; i < st.pages.length; i += per) out.push(st.pages.slice(i, i + per).map(function (_, j) { return i + j; }));
   st.screens = out;
 }
 function openStep(song) {
   lsSet(K.per, '2');   // every song starts with two sections per screen ("Aa Bigger" switches for this song)
-  st = { pages: songPages(song), screens: [], i: 0 };
+  st = { pages: songPages(song), screens: [], i: 0, custom: null };
+  var sl = customSlides(song);
+  if (sl) {
+    st.pages = []; st.custom = [];
+    sl.forEach(function (t) {
+      var idx = [];
+      textBlocks(t).forEach(function (b) { idx.push(st.pages.length); st.pages.push(b); });
+      if (!idx.length) { idx.push(st.pages.length); st.pages.push({ chorus: false, lines: [' '] }); }
+      st.custom.push(idx);
+    });
+  }
   buildScreens();
   show('lyrics');
   keepAwake(true);
@@ -382,11 +403,12 @@ function togglePerScreen() {
   st.i = st.screens.findIndex ? st.screens.findIndex(function (sc) { return sc.indexOf(firstPage) >= 0; }) : 0;
   if (st.i < 0) st.i = 0;
   renderStep(0);
-  badge(perScreen() === 2 ? 'Two sections per screen' : 'One section per screen');
+  badge(st.custom ? (perScreen() === 2 ? 'Smaller words' : 'Bigger words') : perScreen() === 2 ? 'Two sections per screen' : 'One section per screen');
 }
 function fitStep() {
   var page = $('step-page'), stage = $('step-stage');
-  var size = (STEP_SIZE[document.documentElement.getAttribute('data-size')] || STEP_SIZE.normal) * (narrow() ? 1.4 : 1);
+  var size = (STEP_SIZE[document.documentElement.getAttribute('data-size')] || STEP_SIZE.normal) * (narrow() ? 1.4 : 1)
+    * (st.custom && perScreen() === 1 ? 1.35 : 1);   // a laid-out song: "Bigger" just means bigger words
   page.style.fontSize = size + 'vw';
   while (size > 2 && (page.scrollHeight > stage.clientHeight || page.scrollWidth > stage.clientWidth)) {
     size *= 0.94;
@@ -427,7 +449,8 @@ function renderStep(dir) {
   $('c-back').disabled = st.i === 0;
   $('c-next').textContent = st.i < n - 1 ? 'Next ▸' : 'Questions ▸';
   $('c-size').textContent = perScreen() === 2 ? 'Aa Bigger' : 'Aa Smaller';
-  $('c-size').title = perScreen() === 2 ? 'One section per screen, bigger words' : 'Two sections per screen, smaller words';
+  $('c-size').title = st.custom ? (perScreen() === 2 ? 'Bigger words' : 'Smaller words')
+    : perScreen() === 2 ? 'One section per screen, bigger words' : 'Two sections per screen, smaller words';
 }
 function stepGo(d) {
   var n = st.screens.length;
@@ -659,7 +682,7 @@ function typing() {
   return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable);
 }
 document.addEventListener('keydown', function (e) {
-  if ($('settings').open || current === 'editor' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
+  if ($('settings').open || current === 'editor' || current === 'slides' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === 'c' || e.key === 'C') { cycleTheme(); return; }
   if (current === 'welcome' && e.key === 'Enter' && document.activeElement === document.body) { e.preventDefault(); openList(); }
   else if (current === 'list') listKeys(e);
@@ -707,6 +730,7 @@ function edPick(id) {
   $('f-listen').value = (s.listen || []).join('\n');
   $('f-ask').value = (s.ask || []).join('\n');
   $('f-lyrics').value = s.lyrics || '';
+  $('f-slides-note').hidden = !customSlides(s);
   renderEdCats(s.cats || []);
   $('f-saved').textContent = '';
   resetDelete();

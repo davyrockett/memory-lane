@@ -110,4 +110,16 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   (Listen for… is always soft blue); a small six-colour stripe under the app name on the welcome screen; the progress
   line is a gentle gradient. Lyrics stay plain. Yellow on blue keeps its own high-contrast text colours.
   The selected tile (v18) is framed inside the tile in its own colour (the orange outside outline clashed and got clipped).
+- **Slide editor (v19, `slides.js`):** ✎ Edit in the song's control bar opens a slideshow editor on the current slide
+  (MacBook-oriented). A song can carry `slides` (list of texts, one per screen, lyrics format: blank line = gap between
+  verses, `[Chorus]` line marks one); songs without it keep the automatic layout, and the editor starts from the
+  automatic small-mode screens. Editing is a plain textarea over a "mirror" div (same font/size/wrapping, transparent
+  textarea text) so typing, selection, copy/paste work normally and choruses show coloured. Return = new line,
+  Shift+Return = split slide at cursor (stays chorus if inside one), Backspace at start = join onto previous,
+  Option+↑/↓ = prev/next slide, Esc/Done = back to singing on that slide. Buttons: New slide, Repeat slide (separate
+  copy, David's choice), Chorus toggle (verse at cursor), Move up/down, Join with next, Delete, Undo (structure
+  changes), Reset to automatic. Drag thumbnails to reorder. Sized like the TV in small mode (16:9 frame, same fit
+  rules). Saves 0.8 s after a change (also rewrites `lyrics` from the slides). With custom slides, Aa Bigger/Smaller
+  only changes text size (×1.35 start). TV link: editor screen isn't shared; a linked TV fetches newer song data
+  (`s.u` = song updatedAt) before showing an edited song. Edit songs page shows a note on songs with custom slides.
 

@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v18';
+  window.APP_VERSION = 'v19';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -114,6 +114,7 @@
       <button class="cb" id="c-faster" title="Faster (↑)">+ Faster</button>
     </span>
     <button class="cb" id="c-size" title="Make the words bigger or smaller">Aa Size</button>
+    <button class="cb step-only" id="c-edit" title="Lay out this song's slides (line breaks, page breaks, repeats)">✎ Edit</button>
     <button class="cb" id="c-colors" title="Change colors (C)">◐ Colors</button>
     <button class="cb" id="c-done" title="Finish and go to the questions (Enter)">Questions ▸</button>
   </nav>
@@ -166,12 +167,50 @@
           <textarea id="f-ask" rows="4"></textarea></label>
         <label>Lyrics <span class="cap">(a blank line between verses; put [Chorus] on its own line at the top of a chorus)</span>
           <textarea id="f-lyrics" rows="18" class="mono"></textarea></label>
+        <p class="cap" id="f-slides-note" hidden>This song has its own slide layout (made with ✎ Edit while singing). Changes to the
+          lyrics here won't show until you use “Reset to automatic” in the slide editor.</p>
         <div class="row ed-actions">
           <button type="button" class="btn danger" id="f-delete">Delete song</button>
           <span class="cap" id="f-saved"></span>
         </div>
       </div>
     </form>
+  </div>
+</section>
+
+<!-- Slide editor: lay out a song's screens. -->
+<section id="slides" class="screen" hidden>
+  <header class="sl-head">
+    <h1 class="list-title" id="sl-title"></h1>
+    <span class="cap" id="sl-status"></span>
+    <button class="btn" id="sl-undo" title="Undo the last slide change">↶ Undo</button>
+    <button class="btn" id="sl-reset" title="Throw away your layout and go back to the automatic slides">Reset to automatic</button>
+    <button class="btn primary" id="sl-done">Done</button>
+  </header>
+  <div class="sl-body">
+    <ol class="sl-strip" id="sl-strip"></ol>
+    <div class="sl-main">
+      <div class="sl-frame" id="sl-frame">
+        <p class="sl-count" id="sl-count"></p>
+        <div class="sl-stage" id="sl-stage">
+          <div class="sl-mirror" id="sl-mirror" aria-hidden="true"></div>
+          <textarea class="sl-text" id="sl-text" spellcheck="false" autocomplete="off" aria-label="Slide words"></textarea>
+        </div>
+        <p class="sl-next" id="sl-next"></p>
+      </div>
+      <div class="sl-tools">
+        <button class="btn" id="sl-new">＋ New slide</button>
+        <button class="btn" id="sl-repeat" title="Add a copy of this slide right after it">⧉ Repeat slide</button>
+        <button class="btn" id="sl-chorus" title="Mark or unmark the verse under the cursor as a chorus">♪ Chorus</button>
+        <button class="btn" id="sl-up">↑ Move up</button>
+        <button class="btn" id="sl-down">↓ Move down</button>
+        <button class="btn" id="sl-join" title="Pull the next slide's words onto this one">⤓ Join with next</button>
+        <button class="btn danger" id="sl-delete">Delete slide</button>
+      </div>
+      <p class="cap sl-help">Type as usual. <b>Return</b> = new line · <b>Shift+Return</b> = new slide from the cursor ·
+        <b>Backspace</b> at the very start joins this slide onto the one before · a blank line = a gap between verses ·
+        <b>Option+↑ / ↓</b> = previous / next slide · drag slides in the list to reorder.</p>
+    </div>
   </div>
 </section>
 
@@ -237,6 +276,7 @@
 
 <script src="app.js"></script>
 <script src="vendor/paho-mqtt.min.js"></script>
+<script src="slides.js"></script>
 <script src="remote.js"></script>
 </body>
 </html>

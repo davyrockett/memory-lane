@@ -38,3 +38,13 @@ Works on iPad and iPhone too: tap or swipe left for the next section, swipe righ
 There's no code to type. Pressing keys on the TV still works too. If the TV loses the connection,
 it keeps showing the words, with a small red dot in the corner, and reconnects by itself.
 
+## Laying out a song's slides
+While a song is showing, click **✎ Edit** in the bottom bar. You get a slideshow view: all the song's slides down the
+left, and the current slide big on the right, at the size it'll be on the TV.
+- Type as usual. **Return** starts a new line; **Shift+Return** starts a new slide from the cursor.
+- **Backspace** at the very start of a slide joins it onto the slide before. A blank line makes a gap between verses.
+- Copy and paste work between slides. **⧉ Repeat slide** adds a copy (e.g. a chorus) that you can drag into place.
+- **♪ Chorus** marks the verse under the cursor as a chorus (it shows in the chorus colour).
+- Drag slides in the list to reorder them. **↶ Undo** undoes slide changes. **Reset to automatic** goes back to the app's own layout.
+- Changes save as you go. Click **Done** (or press Esc) to go back to singing on that slide.
+

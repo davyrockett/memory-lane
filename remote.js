@@ -41,7 +41,7 @@ function screenState() {
             size: document.documentElement.getAttribute('data-size'), per: perScreen() };
   if (current === 'list') { s.group = group; s.seed = shuffleSeed; }
   if (current === 'card' && card.song) { s.song = card.song.id; s.cm = card.mode; s.cf = card.fact; s.cl = card.listen; }
-  if (current === 'lyrics' && ly.song) { s.song = ly.song.id; s.i = st.i; }
+  if (current === 'lyrics' && ly.song) { s.song = ly.song.id; s.i = st.i; s.u = ly.song.updatedAt || ''; }
   if (current === 'talk' && talk.song) { s.song = talk.song.id; s.ti = talk.i; }
   return s;
 }
@@ -63,7 +63,14 @@ function applyState(s) {
       card.mode = s.cm || 'fact'; card.fact = s.cf || 0; card.listen = s.cl || 0;
       renderPanel();
     } else if (s.screen === 'lyrics' && song) {
-      var prev = current === 'lyrics' && ly.song && ly.song.id === song.id ? st.i : -1;
+      // The other device has a newer version of this song (e.g. David just laid out its slides): fetch it first.
+      if (s.u && (song.updatedAt || '') < s.u && !link.refreshing) {
+        link.refreshing = true;
+        sync.run().then(function () { link.refreshing = false; applyState(s); });
+        return;
+      }
+      var same = current === 'lyrics' && ly.song && ly.song.id === song.id && ly.song.updatedAt === song.updatedAt;
+      var prev = same ? st.i : -1;
       if (prev < 0) { lyOpen(song); prev = 0; }
       else if (perChanged) buildScreens();
       st.i = Math.max(0, Math.min(st.screens.length - 1, s.i || 0));
@@ -87,7 +94,7 @@ function lyOpen(song) {
 
 /* ---------- Sending ---------- */
 function stateChanged() {
-  if (!linked() || link.applying || current === 'editor') return;
+  if (!linked() || link.applying || current === 'editor' || current === 'slides') return;
   clearTimeout(link.sendTimer);
   link.sendTimer = setTimeout(sendState, 60);
 }
@@ -125,7 +132,7 @@ function receive(text, retained) {
   link.seen[msg.id] = msg.n;
   // A saved state from a long time ago (e.g. last week's visit) shouldn't move this screen.
   if (retained && Math.abs(Date.now() - msg.t) > 30 * 60 * 1000) return;
-  if (current === 'editor' || $('settings').open) return;
+  if (current === 'editor' || current === 'slides' || $('settings').open) return;
   applyState(msg.s);
 }
 
