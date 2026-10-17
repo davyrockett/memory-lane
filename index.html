@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>
-  window.APP_VERSION = 'v16';
+  window.APP_VERSION = 'v17';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -37,6 +37,7 @@
     <p class="welcome-hello">Hello! My name is David.</p>
     <h1 class="welcome-title">Let’s sing together!</h1>
     <p class="welcome-app">Memory Lane Songbook</p>
+    <div class="welcome-stripe" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="welcome-actions">
       <button class="btn big primary" id="welcome-go">Choose a song ▸</button>
       <button class="btn" id="welcome-full">Full screen</button>

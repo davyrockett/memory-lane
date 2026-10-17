@@ -381,3 +381,40 @@ input:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 1
 /* On the TV: no control bar unless someone moves a mouse, no cursor. */
 body.tv .ctrl.quiet { opacity: 0; }
 @media (max-width: 800px) { .welcome-link { flex-direction: column; align-items: center; } }
+
+/* ---------- A touch of colour (v17) ----------
+   Each group has a soft colour (set from app.js as --c, with a pale --c-soft): a dot on its button, a stripe down
+   the left of its songs' tiles, and a pale tint on the title card. Lyrics stay plain for easy reading. */
+.chip.has-c::before {
+  content: ''; display: inline-block; width: .55em; height: .55em; border-radius: 50%;
+  background: var(--c); margin-right: .45em; vertical-align: .06em;
+}
+.chip.has-c[aria-pressed="true"] { background: var(--c-soft); border-color: var(--c); color: var(--ink); }
+.tile { border-left: .55vw solid var(--c, var(--line)); }
+.tile:hover { border-color: var(--c, var(--accent)); }
+.tile:focus { background: var(--c-soft, var(--panel)); }
+#card .card-title { color: var(--ink); }
+#card .card-panel { background: var(--c-soft, var(--panel)); border-color: var(--c, var(--line)); }
+#card .panel-label { color: var(--c, var(--chorus)); filter: brightness(.8); }
+#card .card-panel.listen { background: rgba(79, 143, 196, .12); border-color: #4F8FC4; }
+#card .card-panel.listen .panel-label { color: #2F6A9C; filter: none; }
+#talk .talk-label { color: #6FA36B; filter: brightness(.8); }
+.welcome-stripe { display: flex; width: 22vw; height: .7vh; min-height: 5px; margin: 1.2vh auto 3vh; border-radius: 99px; overflow: hidden; }
+.welcome-stripe span { flex: 1; }
+.welcome-stripe span:nth-child(1) { background: #E8822A; }
+.welcome-stripe span:nth-child(2) { background: #D9A21B; }
+.welcome-stripe span:nth-child(3) { background: #6FA36B; }
+.welcome-stripe span:nth-child(4) { background: #2F9C94; }
+.welcome-stripe span:nth-child(5) { background: #4F8FC4; }
+.welcome-stripe span:nth-child(6) { background: #8B62B8; }
+.progress-fill { background: linear-gradient(90deg, #E8822A, #D9A21B, #6FA36B, #4F8FC4); }
+/* Dark: colours read a little lighter. */
+[data-theme="dark"] #card .panel-label, [data-theme="dark"] #talk .talk-label { filter: brightness(1.25); }
+[data-theme="dark"] #card .card-panel.listen .panel-label { color: #8EC0EA; }
+@media (max-width: 800px) { .tile { border-left-width: 6px; } .welcome-stripe { width: 50vw; } }
+/* Yellow on blue is the high-contrast choice: keep its own colours for text, colour only the dots and stripes. */
+[data-theme="blue"] #card .card-panel, [data-theme="blue"] #card .card-panel.listen { background: var(--panel); }
+[data-theme="blue"] #card .panel-label, [data-theme="blue"] #card .card-panel.listen .panel-label,
+[data-theme="blue"] #talk .talk-label { color: var(--chorus); filter: none; }
+[data-theme="blue"] .chip.has-c[aria-pressed="true"] { background: var(--panel); }
+[data-theme="blue"] .tile:focus { background: var(--panel); }

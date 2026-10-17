@@ -104,4 +104,9 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   and every group show a mixed-up order, reshuffled each time the list opens from another screen; songs sung today
   go to the end. The "A–Z" chip keeps alphabetical order for finding a requested song. Order = `mixKey(id)` from
   `shuffleSeed`; the seed travels in the TV-link state so a linked TV shows the same order.
+- **A touch of colour (v17, David: "super tasteful and neat"):** each group has a soft colour (`GROUP_COLORS` in app.js;
+  new groups get a spare one; decades slate blue): a dot on its button (pale tint when selected), a stripe down the left
+  of its songs' tiles (the open group's colour, else the song's first group), a pale tint on the title-card panel
+  (Listen for… is always soft blue); a small six-colour stripe under the app name on the welcome screen; the progress
+  line is a gentle gradient. Lyrics stay plain. Yellow on blue keeps its own high-contrast text colours.
 

@@ -128,6 +128,37 @@ var DECADES = [
   { key: 'dec:7080', label: '1970s & 80s', test: function (y) { return y >= 1970; } },
 ];
 function decade(key) { return DECADES.filter(function (d) { return d.key === key; })[0]; }
+// A soft colour for each group: a dot on its button, a stripe on its songs' tiles, a tint on the title card.
+// Groups added later get one from the spare list. Decades share a quiet slate blue.
+var GROUP_COLORS = {
+  'Sing-Along Favorites': '#E8822A', 'Love Songs': '#D45D79', 'Feel-Good': '#D9A21B', 'Gentle': '#6FA36B',
+  'Moon, Sun & Sky': '#4F8FC4', 'Travel & Home': '#2F9C94', 'Country & Western': '#B36A2E', 'Elvis': '#8B62B8',
+  'The Beatles': '#4467B0', 'Movies & Shows': '#B04A8C', 'Old Favorites': '#8A6E52',
+};
+var SPARE_COLORS = ['#5E9C8A', '#C0634B', '#7A7FC2', '#A08A2E', '#4C8DA6'];
+var DECADE_COLOR = '#6E819A';
+function groupColor(name) {
+  if (!name) return '';
+  if (GROUP_COLORS[name]) return GROUP_COLORS[name];
+  if (/^dec:/.test(name)) return DECADE_COLOR;
+  var h = 0;
+  for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return SPARE_COLORS[h % SPARE_COLORS.length];
+}
+function soft(hex, a) {
+  var n = parseInt(hex.slice(1), 16);
+  return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+function tint(elm, hex) {
+  if (!hex) { elm.style.removeProperty('--c'); elm.style.removeProperty('--c-soft'); return; }
+  elm.style.setProperty('--c', hex);
+  elm.style.setProperty('--c-soft', soft(hex, 0.14));
+}
+// The colour a song shows: the open group's, or else the song's first group.
+function songColor(song) {
+  if (group !== 'all' && group !== 'az' && (decade(group) || (song.cats || []).indexOf(group) >= 0)) return groupColor(group);
+  return groupColor((song.cats || [])[0]);
+}
 function allGroupKeys() { return ['all', 'az'].concat(groups(), DECADES.map(function (d) { return d.key; })); }
 // The list is shown in a mixed-up order (residents tended to pick whatever came first, i.e. the A songs),
 // reshuffled each time the song list opens, with today's songs moved to the end. "A–Z" keeps alphabetical order.
@@ -162,6 +193,7 @@ function renderChips() {
   function chip(key, label, cls) {
     var b = el('button', 'chip' + (cls ? ' ' + cls : ''), label);
     b.setAttribute('aria-pressed', String(key === group));
+    if (key !== 'all' && key !== 'az') { b.classList.add('has-c'); tint(b, groupColor(key)); }
     b.tabIndex = -1;
     b.addEventListener('click', function () { this.blur(); setGroup(key); });
     box.appendChild(b);
@@ -185,6 +217,7 @@ function renderList() {
   listSongs().forEach(function (song) {
     var t = el('button', 'tile');
     t.dataset.id = song.id;
+    tint(t, songColor(song));
     t.appendChild(el('span', 'tile-title', song.title));
     var meta = el('span', 'tile-meta', [song.artist, song.year].filter(Boolean).join(' · ') || ' ');
     if (sung.indexOf(song.id) >= 0) { meta.appendChild(document.createTextNode(' · ')); meta.appendChild(el('span', 'tile-sung', '✓ Sung today')); }
@@ -239,6 +272,7 @@ function openCard(id) {
   card = { song: song, mode: 'fact', fact: 0, listen: 0 };
   $('card-title').textContent = song.title;
   $('card-meta').textContent = [song.artist, song.year].filter(Boolean).join(' · ');
+  tint($('card'), songColor(song));
   renderPanel();
   show('card');
   $('card-start').focus();
