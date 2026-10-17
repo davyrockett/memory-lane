@@ -128,10 +128,29 @@ var DECADES = [
   { key: 'dec:7080', label: '1970s & 80s', test: function (y) { return y >= 1970; } },
 ];
 function decade(key) { return DECADES.filter(function (d) { return d.key === key; })[0]; }
-function allGroupKeys() { return ['all'].concat(groups(), DECADES.map(function (d) { return d.key; })); }
+function allGroupKeys() { return ['all', 'az'].concat(groups(), DECADES.map(function (d) { return d.key; })); }
+// The list is shown in a mixed-up order (residents tended to pick whatever came first, i.e. the A songs),
+// reshuffled each time the song list opens, with today's songs moved to the end. "A–Z" keeps alphabetical order.
+// The order comes from a number (the seed), so a linked TV can show exactly the same order.
+var shuffleSeed = Math.floor(Math.random() * 1e9);
+function reshuffle() { shuffleSeed = Math.floor(Math.random() * 1e9); }
+function mixKey(id) {
+  var h = 2166136261;
+  for (var i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); }
+  // Stir the song's number together with the seed thoroughly, so no song keeps landing near the top.
+  h ^= shuffleSeed;
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return h >>> 0;
+}
 function listSongs() {
   var s = allSongs();
-  if (group === 'all') return s;
+  if (group !== 'az') {
+    var sung = sungToday();
+    s = s.slice().sort(function (a, b) {
+      return (sung.indexOf(a.id) >= 0) - (sung.indexOf(b.id) >= 0) || mixKey(a.id) - mixKey(b.id);
+    });
+  }
+  if (group === 'all' || group === 'az') return s;
   var d = decade(group);
   if (d) return s.filter(function (x) { var y = Number(x.year); return y && d.test(y); });
   return s.filter(function (x) { return (x.cats || []).indexOf(group) >= 0; });
@@ -147,7 +166,8 @@ function renderChips() {
     b.addEventListener('click', function () { this.blur(); setGroup(key); });
     box.appendChild(b);
   }
-  chip('all', 'All songs A–Z');
+  chip('all', 'All songs');
+  chip('az', 'A–Z');
   groups().forEach(function (g) { chip(g, g); });
   DECADES.forEach(function (d) { chip(d.key, d.label, 'decade'); });
 }
@@ -177,6 +197,9 @@ function renderList() {
   }
 }
 function openList() {
+  // A fresh order every time the list opens (not when a linked device is copying another one's screen).
+  var copying = typeof link !== 'undefined' && link.applying;
+  if (current !== 'list' && !copying) reshuffle();
   show('list');
   renderList();
   var tile = lastSongId && $('grid').querySelector('[data-id="' + lastSongId + '"]');

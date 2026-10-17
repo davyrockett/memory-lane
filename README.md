@@ -5,7 +5,8 @@ Big sing-along lyrics for the TV when David performs in memory care. No sound: D
 **Open it:** https://davyrockett.github.io/memory-lane/ (in the TV's web browser; use Full screen on the welcome page).
 
 ## At the TV (keyboard)
-- **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups. The ⌂ button (or **Home** / **Esc**) goes back to the welcome screen.
+- **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups. Songs show in a mixed-up order that changes each time
+  (so the A songs don't always come first); songs already sung today go to the end. **A–Z** shows them alphabetically. The ⌂ button (or **Home** / **Esc**) goes back to the welcome screen.
 - **Title card:** **F** another fun fact, **L** "Listen for…", **Enter** to start, **Esc** back. Everything is clickable too.
 - **Lyrics:** one verse or chorus at a time, in huge text. Press to go on: **Space**, **→**, **Page Down** or **Enter**
   (a foot pedal or presenter clicker works too). **←** or **Page Up** goes back, **Esc** goes back to the songs. The faded

@@ -39,7 +39,7 @@ function linked() { return link.role === 'tv' || link.role === 'remote'; }
 function screenState() {
   var s = { screen: current, theme: document.documentElement.getAttribute('data-theme'),
             size: document.documentElement.getAttribute('data-size'), per: perScreen() };
-  if (current === 'list') s.group = group;
+  if (current === 'list') { s.group = group; s.seed = shuffleSeed; }
   if (current === 'card' && card.song) { s.song = card.song.id; s.cm = card.mode; s.cf = card.fact; s.cl = card.listen; }
   if (current === 'lyrics' && ly.song) { s.song = ly.song.id; s.i = st.i; }
   if (current === 'talk' && talk.song) { s.song = talk.song.id; s.ti = talk.i; }
@@ -56,6 +56,7 @@ function applyState(s) {
     if (s.screen === 'welcome' && current !== 'welcome') openWelcome();
     else if (s.screen === 'list') {
       if (s.group && s.group !== group) { group = s.group; lsSet(K.group, group); }
+      if (s.seed != null) shuffleSeed = s.seed;   // same mixed-up order as the other device
       if (current !== 'list') openList(); else renderList();
     } else if (s.screen === 'card' && song) {
       if (current !== 'card' || !card.song || card.song.id !== song.id) openCard(song.id);

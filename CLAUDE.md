@@ -100,4 +100,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   mixed relays); not yet on a real smart TV.
 - **Two sections per screen is the default (v14, David's request):** every song opens with two per screen; "Aa Bigger"
   switches to one for that song only (`openStep` resets `ml.per` to 2).
+- **Shuffled song list (v15, David's request: residents always picked the A songs because they came first):** "All songs"
+  and every group show a mixed-up order, reshuffled each time the list opens from another screen; songs sung today
+  go to the end. The "A–Z" chip keeps alphabetical order for finding a requested song. Order = `mixKey(id)` from
+  `shuffleSeed`; the seed travels in the TV-link state so a linked TV shows the same order.
 
