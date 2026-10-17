@@ -418,3 +418,13 @@ body.tv .ctrl.quiet { opacity: 0; }
 [data-theme="blue"] #talk .talk-label { color: var(--chorus); filter: none; }
 [data-theme="blue"] .chip.has-c[aria-pressed="true"] { background: var(--panel); }
 [data-theme="blue"] .tile:focus { background: var(--panel); }
+
+/* Selected song tile (v18): framed in the tile's own colour, drawn inside the tile so it never clashes with the
+   group colour or gets clipped at the top or edges of the list. */
+.grid .tile:focus, .grid .tile:focus-visible {
+  outline: none;
+  border-color: var(--c, var(--ink));
+  box-shadow: inset 0 0 0 4px var(--c, var(--ink));
+  background: var(--c-soft, var(--panel));
+}
+[data-theme="blue"] .grid .tile:focus, [data-theme="blue"] .grid .tile:focus-visible { background: var(--panel); }

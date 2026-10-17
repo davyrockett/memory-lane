@@ -109,4 +109,5 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   of its songs' tiles (the open group's colour, else the song's first group), a pale tint on the title-card panel
   (Listen for… is always soft blue); a small six-colour stripe under the app name on the welcome screen; the progress
   line is a gentle gradient. Lyrics stay plain. Yellow on blue keeps its own high-contrast text colours.
+  The selected tile (v18) is framed inside the tile in its own colour (the orange outside outline clashed and got clipped).
 
