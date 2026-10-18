@@ -12,7 +12,9 @@
 
 var DATA_REPO = 'davyrockett/memory-lane-data';
 var DATA_FILE = 'data.json';
-var PAGES_COPY = 'https://davyrockett.github.io/memory-lane-data/';
+// Published copy of the songs, on the same site as the app (works on davyrockett.github.io and davyrockett.com).
+var PAGES_COPY = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'https://davyrockett.github.io/memory-lane-data/'
+  : location.protocol + '//' + location.host + '/memory-lane-data/';
 var K = {
   data: 'ml.data', token: 'ml.sync-token', last: 'ml.sync-last', dirty: 'ml.dirty',
   theme: 'ml.theme', size: 'ml.size', count: 'ml.countdown', speeds: 'ml.speeds', group: 'ml.group', sung: 'ml.sung', mode: 'ml.mode', per: 'ml.per',
