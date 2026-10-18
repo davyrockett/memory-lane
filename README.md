@@ -2,7 +2,7 @@
 
 Big sing-along lyrics for the TV when David performs in memory care. No sound: David plays live.
 
-**Open it:** https://davyrockett.github.io/memory-lane/ (in the TV's web browser; use Full screen on the welcome page).
+**Open it:** https://www.davyrockett.com/memory-lane/ (in the TV's web browser; use Full screen on the welcome page).
 
 ## At the TV (keyboard)
 - **Song list:** arrows to move, **Enter** to open, **Tab** to switch groups. Songs show in a mixed-up order that changes each time

@@ -50,7 +50,7 @@ with this section (copy it from any other app) plus an "## This app" section.
 ## This app
 
 **Memory Lane Songbook**: David puts it on the TV in memory-care homes when he performs (guitar, live; the app makes
-no sound). Residents choose a song from a list; the lyrics then scroll by in huge text. Live: https://davyrockett.github.io/memory-lane/
+no sound). Residents choose a song from a list; the lyrics then scroll by in huge text. Live: https://www.davyrockett.com/memory-lane/
 Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start Memory Lane.command`).
 
 - **Set-up David chose (2026-10-15):** the TV's own web browser with a keyboard (sometimes a mouse), reliable Wi-Fi,
