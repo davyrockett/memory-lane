@@ -2,7 +2,7 @@
 //
 // IMPORTANT: whenever any file below changes, bump VERSION (tools/bump.sh).
 // That is how phones and iPads learn there's an update to download.
-const VERSION = 'v21';
+const VERSION = 'v22';
 const NAME = 'memory-lane';
 const CACHE = `${NAME}-${VERSION}`;
 const FONTS = 'memory-lane-fonts';
@@ -12,6 +12,7 @@ const ASSETS = [
   './index.html',
   './move.js',
   './suite.js',
+  './share.js',
   './app.js',
   './remote.js',
   './slides.js',

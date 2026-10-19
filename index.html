@@ -15,8 +15,9 @@
 <link rel="stylesheet" href="styles.css">
 <script src="move.js" data-keep="ml." data-synced="ml.data,ml.dirty"></script>
 <script src="suite.js" defer></script>
+<script src="share.js" defer></script>
 <script>
-  window.APP_VERSION = 'v21';
+  window.APP_VERSION = 'v22';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -264,6 +265,8 @@
     <div class="row"><input id="sync-token" type="password" placeholder="Access key" autocomplete="off"><button class="btn" id="sync-connect">Connect</button></div>
     <p class="cap problem" id="sync-error" hidden></p>
   </form>
+  <h3>Share</h3>
+  <div data-share><p class="cap" data-share-link></p><p><button class="btn" data-share-copy>Copy link</button> <button class="btn" data-share-send hidden>Share…</button></p></div>
   <h3>App</h3>
   <p class="cap" id="ver-line"></p>
   <p><button class="btn" id="set-update">Check for updates</button></p>
