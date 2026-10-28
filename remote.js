@@ -39,7 +39,7 @@ function linked() { return link.role === 'tv' || link.role === 'remote'; }
 function screenState() {
   var s = { screen: current, theme: document.documentElement.getAttribute('data-theme'),
             size: document.documentElement.getAttribute('data-size'), per: perScreen() };
-  if (current === 'list') { s.group = group; s.seed = shuffleSeed; }
+  if (current === 'list') { s.group = group; s.seed = shuffleSeed; listAnchor(s); }
   if (current === 'card' && card.song) { s.song = card.song.id; s.cm = card.mode; s.cf = card.fact; s.cl = card.listen; }
   if (current === 'lyrics' && ly.song) { s.song = ly.song.id; s.i = st.i; s.u = ly.song.updatedAt || ''; }
   if (current === 'talk' && talk.song) { s.song = talk.song.id; s.ti = talk.i; }
@@ -55,9 +55,12 @@ function applyState(s) {
     var song = s.song ? get(s.song) : null;
     if (s.screen === 'welcome' && current !== 'welcome') openWelcome();
     else if (s.screen === 'list') {
+      // Only rebuild the tiles when the list itself changed (rebuilding jumps back to the top).
+      var fresh = current !== 'list' || (s.group && s.group !== group) || (s.seed != null && s.seed !== shuffleSeed);
       if (s.group && s.group !== group) { group = s.group; lsSet(K.group, group); }
       if (s.seed != null) shuffleSeed = s.seed;   // same mixed-up order as the other device
-      if (current !== 'list') openList(); else renderList();
+      if (current !== 'list') openList(); else if (fresh) renderList();
+      listScrollTo(s, fresh);
     } else if (s.screen === 'card' && song) {
       if (current !== 'card' || !card.song || card.song.id !== song.id) openCard(song.id);
       card.mode = s.cm || 'fact'; card.fact = s.cf || 0; card.listen = s.cl || 0;
@@ -91,6 +94,49 @@ function lyOpen(song) {
   pause();
   openStep(song);
 }
+
+/* ---------- Scrolling the song list ----------
+   The other screen may be a different size, so the place is sent as "this song is at the top, this far in"
+   (or simply top / bottom), not in pixels. */
+var listScroll = { user: 0, follow: 0, timer: 0 };
+function tileY(t) { var g = $('grid'); return t.getBoundingClientRect().top - g.getBoundingClientRect().top + g.scrollTop; }
+function listAnchor(s) {
+  var g = $('grid');
+  if (g.scrollTop <= 2) { s.top = ''; return; }
+  if (g.scrollTop >= g.scrollHeight - g.clientHeight - 2) { s.end = 1; return; }
+  var tiles = g.querySelectorAll('.tile');
+  for (var i = 0; i < tiles.length; i++) {
+    var y = tileY(tiles[i]), h = tiles[i].offsetHeight;
+    if (y + h > g.scrollTop) { s.top = tiles[i].dataset.id; s.off = Math.round((g.scrollTop - y) / h * 100) / 100; return; }
+  }
+}
+function listScrollTo(s, instant) {
+  var g = $('grid'), y;
+  if (s.end) y = g.scrollHeight;
+  else if (s.top === '') y = 0;
+  else if (s.top) {
+    var t = g.querySelector('[data-id="' + s.top + '"]');
+    if (!t) return;
+    y = tileY(t) + (s.off || 0) * t.offsetHeight;
+  } else return;   // from an older version of the app: leave the scroll alone
+  if (Math.abs(g.scrollTop - y) < 2) return;
+  listScroll.follow = Date.now() + 1500;   // this scroll came from the other screen: don't send it back
+  if (instant) { g.style.scrollBehavior = 'auto'; g.scrollTop = y; g.style.scrollBehavior = ''; }
+  else g.scrollTop = y;                    // glides there (the grid scrolls smoothly)
+}
+// Only scrolls the person did here count (mouse wheel, trackpad, touch, scroll bar, keys), not ones copied from the other screen.
+function scrollByHand() { listScroll.user = Date.now(); }
+['wheel', 'touchstart', 'touchmove', 'pointerdown'].forEach(function (ev) {
+  $('grid').addEventListener(ev, scrollByHand, { passive: true });
+});
+document.addEventListener('keydown', function () { if (current === 'list') scrollByHand(); });
+$('grid').addEventListener('scroll', function () {
+  var now = Date.now();
+  if (!linked() || current !== 'list' || link.applying || now < listScroll.follow || now - listScroll.user > 1200) return;
+  if (listScroll.timer) return;
+  // A few updates a second while scrolling; fewer on the backup relay, which has a daily limit.
+  listScroll.timer = setTimeout(function () { listScroll.timer = 0; stateChanged(); }, link.mqttOn ? 150 : 600);
+}, { passive: true });
 
 /* ---------- Sending ---------- */
 function stateChanged() {

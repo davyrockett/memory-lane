@@ -113,6 +113,11 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   dot shows if the link drops. Topics: `davyrockett-memory-lane/<code>/state|tv`, ntfy `davyrockett-memory-lane-<code>`.
   Messages carry only screen/song/section/colors. Tested with two browser tabs (both directions, late join, backup,
   mixed relays); not yet on a real smart TV.
+- **TV follows the song-list scroll (v24, David's request):** scrolling the list on the remote scrolls the TV's list.
+  Sent as the song at the top + how far into it (`top`/`off`), or `top: ''` / `end: 1`, so different screen sizes
+  line up. Only scrolls done by hand count (wheel/touch/keys/scroll bar), a few updates a second (slower on ntfy),
+  and a scroll copied from the other screen is never sent back. A received list state no longer rebuilds the tiles
+  unless the group or order changed (rebuilding jumped back to the top). Tested with two tabs on a private link name.
 - **Two sections per screen is the default (v14, David's request):** every song opens with two per screen; "Aa Bigger"
   switches to one for that song only (`openStep` resets `ml.per` to 2).
 - **Shuffled song list (v15, David's request: residents always picked the A songs because they came first):** "All songs"
