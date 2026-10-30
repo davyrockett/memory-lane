@@ -422,7 +422,9 @@ function fitStep() {
     page.style.fontSize = size + 'vw';
   }
   // Rather than break a line in the middle of a phrase, shrink a little (down to about 3/4 size).
-  var floor = narrow() ? size : size * 0.75;
+  // In the remote's ◫ Both view the words get half the screen, so they may shrink further to break lines like the TV.
+  var half = $('lyrics').getAttribute('data-chart') === 'both';
+  var floor = half ? size * 0.5 : narrow() ? size : size * 0.75;
   while (size > floor && wrapped(page)) {
     size *= 0.95;
     page.style.fontSize = size + 'vw';

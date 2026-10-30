@@ -56,7 +56,10 @@ showing only the words.
   Back / Next buttons work too. Scrolling the chart doesn't count as a tap.
 - An **orange band** shows the lines of the chart that go with the words on the TV right now, and the chart scrolls to keep
   it in view. The strip at the top shows what's on the TV now and what comes next, and the capo.
-- **Aa Words** in the bottom bar switches the iPad back to the words; **🎸 Chart** switches to the chart again.
+- Every song opens on your chart. In the bottom bar, **📺 TV** shows the words just as the TV shows them, and
+  **🎸 Chart** goes back to your chart. The next song opens on the chart again.
+- **◫ Both** (iPad turned sideways): your chart on the left, what the TV shows on the right. It stays on for the next songs
+  until you pick Chart or TV. In portrait the button is greyed out and you see the chart.
 - **✎ Mark** (top right) fixes the marks for this song without leaving it.
 
 **Adding a chart:** Settings → Edit songs → the song → **Chart** → **Add chart (PDF or photo)**, and type the capo.

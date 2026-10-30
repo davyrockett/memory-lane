@@ -81,24 +81,38 @@ function scrollToBand(scroller, cls, bottomGap) {
   scroller.scrollTop = Math.max(0, top - 14);
 }
 
-/* ---------- The chart view on the remote ---------- */
-var cv = { built: '' };
-function chartViewOn() {
-  return link.role === 'remote' && current === 'lyrics' && stepOn() && !!chartOf(ly.song) && lsGet(CHART_K.view) !== 'words';
+/* ---------- The chart view on the remote ----------
+   Three views, picked in the control bar: 🎸 Chart (the default: every song opens on it), 📺 TV (the words, as the
+   TV shows them) and ◫ Both (chart on the left, the TV's words on the right; only when the iPad is sideways).
+   Kept per device in ml.chart-view; "TV" lasts until the next song, "Both" stays until changed. */
+var cv = { built: '', mode: '' };
+function sideways() { return window.innerWidth > window.innerHeight && window.innerWidth >= 900; }
+function chartMode() {
+  if (link.role !== 'remote' || current !== 'lyrics' || !stepOn() || !chartOf(ly.song)) return 'words';
+  var v = lsGet(CHART_K.view);
+  if (v === 'words') return 'words';
+  return v === 'both' && sideways() ? 'both' : 'chart';
 }
+function chartViewOn() { return chartMode() !== 'words'; }
 function renderChartView() {
-  var btn = $('c-chart'), remote = link.role === 'remote';
+  var remote = link.role === 'remote';
   var song = current === 'lyrics' ? ly.song : null, ch = chartOf(song);
-  btn.hidden = !remote;
-  btn.disabled = !ch;
-  var on = chartViewOn();
-  btn.textContent = on ? 'Aa Words' : '🎸 Chart';
-  btn.title = !ch ? 'No chart for this song yet (add one in Edit songs)'
-    : on ? 'Show the words on this device, like the TV' : 'Show your chart on this device (the TV keeps showing the words)';
-  btn.setAttribute('aria-pressed', String(on));
-  $('chartview').hidden = !on;
-  $('step').hidden = on;
-  if (!on) return;
+  var mode = chartMode();
+  $('c-view').hidden = !remote;
+  [['c-v-chart', 'chart'], ['c-v-tv', 'words'], ['c-v-both', 'both']].forEach(function (b) {
+    var btn = $(b[0]);
+    btn.disabled = !ch || (b[1] === 'both' && !sideways());
+    btn.classList.toggle('on', !!ch && mode === b[1]);
+    btn.setAttribute('aria-pressed', String(mode === b[1]));
+  });
+  $('c-v-both').title = !ch ? 'No chart for this song yet (add one in Edit songs)'
+    : sideways() ? 'Your chart on the left, what the TV shows on the right' : 'Turn the iPad sideways to see your chart and the TV side by side';
+  $('lyrics').setAttribute('data-chart', mode === 'words' ? '' : mode);
+  $('chartview').hidden = mode === 'words';
+  $('step').hidden = mode === 'chart';
+  // The words were sized for the whole screen; size them again for their half (or back to the whole screen).
+  if (mode !== cv.mode) { cv.mode = mode; if (mode !== 'chart' && stepOn()) fitStep(); }
+  if (mode === 'words') return;
   var key = song.id + '|' + (song.updatedAt || '');
   if (cv.built !== key) { buildChartPages($('cv-pages'), ch); cv.built = key; $('cv-box').scrollTop = 0; }
   var n = st.screens.length, nxt = st.screens[st.i + 1];
@@ -123,17 +137,20 @@ function flash(fwd) {
   var f = $(fwd ? 'cv-flash-r' : 'cv-flash-l');
   f.classList.remove('show'); void f.offsetWidth; f.classList.add('show');
 }
-ctrl('c-chart', function () {
-  lsSet(CHART_K.view, chartViewOn() ? 'words' : null);
-  renderChartView();
-});
+function pickView(v) { lsSet(CHART_K.view, v); renderChartView(); }
+ctrl('c-v-chart', function () { pickView(null); });
+ctrl('c-v-tv', function () { pickView('words'); });
+ctrl('c-v-both', function () { pickView('both'); });
+// Every song opens on the chart (a "Both" choice stays).
+var openStepOrig = openStep;
+openStep = function (song) { if (lsGet(CHART_K.view) === 'words') lsSet(CHART_K.view, null); return openStepOrig.apply(this, arguments); };
 $('cv-mark').addEventListener('click', function () { openMark(ly.song.id, 'lyrics'); });
 // Redraw whenever the words on screen change, a screen opens, or the link is turned on or off.
 ['renderStep', 'show', 'renderLink'].forEach(function (name) {
   var orig = window[name];
   window[name] = function () { var r = orig.apply(this, arguments); renderChartView(); return r; };
 });
-window.addEventListener('resize', function () { if (chartViewOn()) renderChartView(); });
+window.addEventListener('resize', function () { if (link.role === 'remote' && current === 'lyrics') renderChartView(); });
 
 // The remote loads every chart picture once, so they're ready (and saved for offline use) before the songs start.
 var chartsFetched = {};

@@ -146,7 +146,12 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   shows David's chart (PDF or photo) instead of the words, while the TV keeps the words. Tap right half = next, left half
   = back (click events, so scrolling the chart isn't a tap); a flash arrow confirms. An orange band shows the chart lines
   for the TV's current screen; the chart scrolls to keep it in view. Top strip: title · n of N, capo pill, ✎ Mark,
-  "TV now" / "Next" first lines. "🎸 Chart / Aa Words" in the control bar (only on the remote; per device, `ml.chart-view`).
+  "TV now" / "Next" first lines.
+  **View picker (v26):** "🎸 Chart | 📺 TV | ◫ Both" in the control bar (only on the remote; `ml.chart-view` per device:
+  unset = chart, `words`, `both`). Every song opens on the chart (`openStep` wrapper clears `words`); "Both" stays until
+  changed. Both = chart on the left 58%, the TV's words on the right 42% (`#lyrics[data-chart="both"]`, "On the TV"
+  label, `.cv-now` hidden); only when sideways (`sideways()`: wider than tall and ≥ 900 px), otherwise the button is greyed
+  and the chart shows. In Both, `fitStep` may shrink the words to half size so lines break like on the TV.
   Never shown on the TV or an unlinked device. Chart view isn't part of the shared screen state.
 - **Chart data:** song `capo` (text) and `chart: { pages: [{src, w, h, rows}], marks: [...] }`. Pages are pictures in the
   data repo's `charts/` folder (new file name on every upload; a replaced chart's old files are deleted, best effort),

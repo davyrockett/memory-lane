@@ -497,6 +497,18 @@ body.tv .ctrl.quiet { opacity: 0; }
 .cv-flash.right { right: 3%; }
 .cv-flash.show { animation: cvFlash .5s ease-out; }
 @keyframes cvFlash { from { opacity: .85; } to { opacity: 0; } }
+/* ◫ Both (iPad sideways): the chart on the left, the TV's words on the right. */
+#lyrics[data-chart="both"] .chartview { right: 42%; border-right: 2px solid var(--line); }
+#lyrics[data-chart="both"] .cv-now { display: none; }
+#lyrics[data-chart="both"] .step { left: 58%; background: var(--panel); }
+#lyrics[data-chart="both"] .step::before {
+  content: 'On the TV'; position: absolute; top: 12px; left: 14px; z-index: 1;
+  color: var(--soft); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+}
+#lyrics[data-chart="both"] .step-head { top: 34px; font-size: 18px; }
+#lyrics[data-chart="both"] .step-stage { top: 72px; }
+#lyrics[data-chart="both"] .step-next { font-size: 17px; }
+.cv-pick .cb:disabled { opacity: .4; }
 
 /* Chart section in Edit songs */
 .ch-row { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 10px; }

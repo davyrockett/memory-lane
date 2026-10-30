@@ -17,7 +17,7 @@
 <script src="suite.js" defer></script>
 <script src="share.js" defer></script>
 <script>
-  window.APP_VERSION = 'v25';
+  window.APP_VERSION = 'v26';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -129,7 +129,11 @@
       <button class="cb" id="c-faster" title="Faster (↑)">+ Faster</button>
     </span>
     <button class="cb" id="c-size" title="Make the words bigger or smaller">Aa Size</button>
-    <button class="cb step-only" id="c-chart" title="Show your chart on this device (the TV keeps showing the words)" hidden>🎸 Chart</button>
+    <span class="cb-group step-only cv-pick" id="c-view" hidden>
+      <button class="cb" id="c-v-chart" title="Your chart on this iPad (the TV keeps showing the words)">🎸 Chart</button>
+      <button class="cb" id="c-v-tv" title="What the TV is showing">📺 TV</button>
+      <button class="cb" id="c-v-both" title="Your chart on the left, what the TV shows on the right">◫ Both</button>
+    </span>
     <button class="cb step-only" id="c-edit" title="Lay out this song's slides (line breaks, page breaks, repeats)">✎ Edit</button>
     <button class="cb" id="c-colors" title="Change colors (C)">◐ Colors</button>
     <button class="cb" id="c-done" title="Finish and go to the questions (Enter)">Questions ▸</button>
