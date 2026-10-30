@@ -146,8 +146,20 @@ function renderChartView() {
   $('cv-now').textContent = firstLine(st.screens[st.i]);
   $('cv-next').textContent = nxt ? firstLine(nxt) : 'Questions (end of the song)';
   drawBands($('cv-pages'), bandsFor(ch, st.screens[st.i]), 'cv-now-band');
-  if (twoUp) showSpread();
-  else scrollToBand($('cv-box'), 'cv-now-band', cv.focus ? 0 : $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top);
+  if (twoUp) { $('cv-pages').style.maxWidth = ''; showSpread(); return; }
+  var gap = cv.focus ? 0 : $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top;
+  fitSection(gap);
+  scrollToBand($('cv-box'), 'cv-now-band', gap);
+}
+// One page across: if this screen's marked lines are taller than the screen, make the chart just small enough
+// that they all show at once (back to full size when they fit).
+function fitSection(gap) {
+  var pages = $('cv-pages'), box = $('cv-box'), bands = box.querySelectorAll('.cv-now-band');
+  pages.style.maxWidth = '';
+  if (!bands.length) return;
+  var span = bands[bands.length - 1].getBoundingClientRect().bottom - bands[0].getBoundingClientRect().top;
+  var room = box.clientHeight - gap - 44 - 24;
+  if (span > room) pages.style.maxWidth = Math.floor(pages.getBoundingClientRect().width * room / span) + 'px';
 }
 // The widest pages that still fit whole between the top of the chart and the control bar, two across.
 function fitTwoUp(ch) {
