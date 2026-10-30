@@ -123,8 +123,10 @@ function renderChartView() {
   if (mode === 'words') return;
   var key = song.id + '|' + (song.updatedAt || '');
   if (cv.built !== key) { buildChartPages($('cv-pages'), ch); cv.built = key; $('cv-box').scrollTop = 0; }
-  // Sideways with the chart alone: two pages side by side, like an open book.
-  $('cv-pages').classList.toggle('two-up', mode === 'chart' && sideways() && ch.pages.length > 1);
+  // Sideways with the chart alone: two pages side by side, like an open book, sized so both whole pages fit.
+  var twoUp = mode === 'chart' && sideways() && ch.pages.length > 1;
+  $('cv-pages').classList.toggle('two-up', twoUp);
+  if (twoUp) fitTwoUp(ch);
   var n = st.screens.length, nxt = st.screens[st.i + 1];
   $('cv-title').textContent = song.title + '  ·  ' + (st.i + 1) + ' of ' + n;
   $('cv-capo').hidden = !song.capo;
@@ -132,7 +134,22 @@ function renderChartView() {
   $('cv-now').textContent = firstLine(st.screens[st.i]);
   $('cv-next').textContent = nxt ? firstLine(nxt) : 'Questions (end of the song)';
   drawBands($('cv-pages'), bandsFor(ch, st.screens[st.i]), 'cv-now-band');
-  scrollToBand($('cv-box'), 'cv-now-band', $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top);
+  if (twoUp) showSpread();
+  else scrollToBand($('cv-box'), 'cv-now-band', $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top);
+}
+// The widest pages that still fit whole between the top of the chart and the control bar, two across.
+function fitTwoUp(ch) {
+  var box = $('cv-box'), br = box.getBoundingClientRect();
+  var tall = $('ctrl').getBoundingClientRect().top - br.top - 22, wide = (box.clientWidth - 32) / 2;
+  var w = Math.floor(Math.min(wide, tall * ch.pages[0].w / ch.pages[0].h));
+  $('cv-pages').style.gridTemplateColumns = 'repeat(2, ' + w + 'px)';
+}
+// Two-up shows a whole spread at a time: scroll to the pair of pages the orange marks are on.
+function showSpread() {
+  var box = $('cv-box'), band = box.querySelector('.cv-now-band');
+  var page = band ? band.parentNode : box.querySelector('.cv-page');
+  if (!page) return;
+  box.scrollTop = Math.max(0, page.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 10);
 }
 function firstLine(screen) { var p = st.pages[screen[0]]; return p ? p.lines[0] + ' …' : ''; }
 // Tap the right half of the chart for the next screen, the left half to go back. (A scroll isn't a tap.)
@@ -314,10 +331,16 @@ function findRows(c) {
   g.drawImage(c, 0, 0, W, H);
   var px = g.getImageData(0, 0, W, H).data, lum = new Float32Array(W * H), sum = 0;
   for (var i = 0; i < W * H; i++) { lum[i] = px[i * 4] * 0.3 + px[i * 4 + 1] * 0.59 + px[i * 4 + 2] * 0.11; sum += lum[i]; }
-  var dark = (sum / (W * H)) * 0.6, ink = [];
-  for (var y = 0; y < H; y++) {
+  var dark = (sum / (W * H)) * 0.6, ink = [], edge = [];
+  // A black border or backdrop around a scanned page isn't ink: skip columns that are dark most of the way down.
+  for (var x = 0; x < W; x++) {
+    var d = 0;
+    for (var y = 0; y < H; y++) if (lum[y * W + x] < dark) d++;
+    edge.push(d > H * 0.5);
+  }
+  for (y = 0; y < H; y++) {
     var n = 0;
-    for (var x = 0; x < W; x++) if (lum[y * W + x] < dark) n++;
+    for (x = 0; x < W; x++) if (!edge[x] && lum[y * W + x] < dark) n++;
     ink.push(n >= 2);
   }
   var bands = [], start = -1, gap = Math.max(2, Math.round(H * 0.01));
