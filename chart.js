@@ -2,15 +2,17 @@
 
    A song can carry
      capo  – e.g. "4", shown next to the chart
-     chart – { pages: [{ src, w, h, rows }], marks: [...] }
+     chart – { pages: [{ src, w, h, rows, trim }], marks: [...] }
        pages: the chart as pictures, one per page, saved in the data repo's charts/ folder. A PDF is turned
               into pictures when it's added (with pdf.js, loaded only then), a photo is just made smaller.
               rows = where the lines of music are on the page (found when it's added), as [top, bottom] fractions
-              of the page height; taps while marking snap to them.
+              of the page height; taps while marking snap to them. trim = [left, top, right, bottom] fractions of
+              the page around the music: only that part is shown, so the blank margins don't shrink the music.
        marks: one per section of words (the pages of the lyrics view, st.pages), saying which lines of the chart
               go with it: { a, b, note }. a and b count pages: 1.25 = a quarter of the way down page 2.
-   The remote shows the marks of whatever is on the TV as an orange band. Tap the right half of the chart for
-   the next screen, the left half to go back. Loaded after remote.js and uses its globals. */
+   The remote marks whatever is on the TV with orange corner brackets. Tap the right third of the chart for the
+   next screen, the left third to go back, the middle to hide everything but the music (focus) or bring it back.
+   Loaded after remote.js and uses its globals. */
 
 var CHART_K = { view: 'ml.chart-view' };
 var CHART_RAW = 'https://raw.githubusercontent.com/' + DATA_REPO + '/main/';
@@ -19,14 +21,21 @@ function chartOf(song) { return song && song.chart && song.chart.pages && song.c
 function chartSrc(p) { return CHART_RAW + p.src; }
 
 /* ---------- Drawing a chart and its bands ---------- */
+function pageTrim(p) { return p.trim || [0, 0, 1, 1]; }
+// Height over width of a page as shown (margins trimmed).
+function pageRatio(p) { var t = pageTrim(p); return (p.h * (t[3] - t[1])) / (p.w * (t[2] - t[0])); }
 function buildChartPages(box, ch) {
   box.textContent = '';
   ch.pages.forEach(function (p, k) {
+    var t = pageTrim(p), tw = t[2] - t[0], th = t[3] - t[1];
     var w = el('div', 'cv-page');
-    w.style.aspectRatio = p.w + ' / ' + p.h;
-    w.dataset.k = k;
+    w.style.aspectRatio = (p.w * tw) + ' / ' + (p.h * th);
+    w.dataset.k = k; w.dataset.y0 = t[1]; w.dataset.y1 = t[3];
     var img = el('img');
     img.src = chartSrc(p); img.alt = 'Chart, page ' + (k + 1); img.draggable = false;
+    // The whole page, scaled and shifted so just the trimmed part shows.
+    img.style.width = (100 / tw) + '%'; img.style.height = (100 / th) + '%';
+    img.style.left = (-t[0] / tw * 100) + '%'; img.style.top = (-t[1] / th * 100) + '%';
     w.appendChild(img);
     box.appendChild(w);
   });
@@ -57,7 +66,9 @@ function drawBands(box, bands, cls) {
   bands.forEach(function (band) {
     var first = true;
     for (var k = Math.floor(band.a); k < band.b && k < pages.length; k++) {
-      var top = Math.max(band.a, k) - k, bot = Math.min(band.b, k + 1) - k;
+      var y0 = Number(pages[k].dataset.y0), y1 = Number(pages[k].dataset.y1);
+      var top = Math.max(0, (Math.max(band.a, k) - k - y0) / (y1 - y0));
+      var bot = Math.min(1, (Math.min(band.b, k + 1) - k - y0) / (y1 - y0));
       if (bot - top < 0.002) continue;
       var d = el('div', 'cv-band ' + cls + (first ? '' : ' from-prev') + (band.b > k + 1 ? ' to-next' : ''));
       d.style.top = (top * 100) + '%';
@@ -86,7 +97,7 @@ function scrollToBand(scroller, cls, bottomGap) {
    Three views, picked in the control bar: 🎸 Chart (the default: every song opens on it), 📺 TV (the words, as the
    TV shows them) and ◫ Both (chart on the left, the TV's words on the right; only when the iPad is sideways).
    Kept per device in ml.chart-view; "TV" lasts until the next song, "Both" stays until changed. */
-var cv = { built: '', mode: '' };
+var cv = { built: '', mode: '', focus: false };   // focus: just the music (and the TV's words on ◫ Both), no bars
 function sideways() { return window.innerWidth > window.innerHeight && window.innerWidth >= 900; }
 function chartMode() {
   if (link.role !== 'remote' || current !== 'lyrics' || !stepOn() || !chartOf(ly.song)) return 'words';
@@ -120,6 +131,7 @@ function renderChartView() {
   $('step').hidden = mode === 'chart';
   // The words were sized for the whole screen; size them again for their half (or back to the whole screen).
   if (mode !== cv.mode) { cv.mode = mode; if (mode !== 'chart' && stepOn()) fitStep(); }
+  document.body.classList.toggle('cv-focus', cv.focus && mode !== 'words');
   if (mode === 'words') return;
   var key = song.id + '|' + (song.updatedAt || '');
   if (cv.built !== key) { buildChartPages($('cv-pages'), ch); cv.built = key; $('cv-box').scrollTop = 0; }
@@ -135,13 +147,13 @@ function renderChartView() {
   $('cv-next').textContent = nxt ? firstLine(nxt) : 'Questions (end of the song)';
   drawBands($('cv-pages'), bandsFor(ch, st.screens[st.i]), 'cv-now-band');
   if (twoUp) showSpread();
-  else scrollToBand($('cv-box'), 'cv-now-band', $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top);
+  else scrollToBand($('cv-box'), 'cv-now-band', cv.focus ? 0 : $('cv-box').getBoundingClientRect().bottom - $('ctrl').getBoundingClientRect().top);
 }
 // The widest pages that still fit whole between the top of the chart and the control bar, two across.
 function fitTwoUp(ch) {
   var box = $('cv-box'), br = box.getBoundingClientRect();
-  var tall = $('ctrl').getBoundingClientRect().top - br.top - 22, wide = (box.clientWidth - 32) / 2;
-  var w = Math.floor(Math.min(wide, tall * ch.pages[0].w / ch.pages[0].h));
+  var tall = (cv.focus ? br.bottom - 12 : $('ctrl').getBoundingClientRect().top) - br.top - 22, wide = (box.clientWidth - 32) / 2;
+  var w = Math.floor(Math.min(wide, tall / Math.max.apply(null, ch.pages.map(pageRatio))));
   $('cv-pages').style.gridTemplateColumns = 'repeat(2, ' + w + 'px)';
 }
 // Two-up shows a whole spread at a time: scroll to the pair of pages the orange marks are on.
@@ -152,10 +164,12 @@ function showSpread() {
   box.scrollTop = Math.max(0, page.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 10);
 }
 function firstLine(screen) { var p = st.pages[screen[0]]; return p ? p.lines[0] + ' …' : ''; }
-// Tap the right half of the chart for the next screen, the left half to go back. (A scroll isn't a tap.)
+// Tap the right third of the chart for the next screen, the left third to go back, the middle for focus.
+// (A scroll isn't a tap.)
 $('cv-box').addEventListener('click', function (e) {
-  var r = this.getBoundingClientRect(), fwd = e.clientX - r.left > r.width / 2;
+  var r = this.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, fwd = x > 2 / 3;
   wake();
+  if (x >= 1 / 3 && !fwd) { cv.focus = !cv.focus; renderChartView(); return; }
   if (!fwd && st.i === 0) return;
   flash(fwd);
   stepGo(fwd ? 1 : -1);
@@ -235,7 +249,7 @@ $('f-chart-file').addEventListener('change', function () {
       });
     }, Promise.resolve()).then(function () {
       var rec = get(id), old = chartOf(rec);
-      rec.chart = { pages: pics.map(function (p) { return { src: p.src, w: p.w, h: p.h, rows: p.rows }; }), marks: [] };
+      rec.chart = { pages: pics.map(function (p) { return { src: p.src, w: p.w, h: p.h, rows: p.rows, trim: p.trim }; }), marks: [] };
       put(id, rec);
       if (old) removeFiles(old);
       if (edId === id) renderEdChart();
@@ -320,7 +334,29 @@ function chartPictures(file) {
 }
 function picture(c, ext) {
   var data = c.toDataURL(ext === 'png' ? 'image/png' : 'image/jpeg', 0.85);
-  return { data: data.slice(data.indexOf(',') + 1), ext: ext, w: c.width, h: c.height, rows: findRows(c) };
+  return { data: data.slice(data.indexOf(',') + 1), ext: ext, w: c.width, h: c.height, rows: findRows(c), trim: findTrim(c) };
+}
+// The box around the music, with a little white kept around it: [left, top, right, bottom] fractions of the page.
+// A dot of dust doesn't count (a column or row needs a few dark spots), and a page on a black backdrop isn't trimmed.
+function findTrim(c) {
+  var W = 300, H = Math.round(c.height * W / c.width);
+  var s = document.createElement('canvas'); s.width = W; s.height = H;
+  var g = s.getContext('2d');
+  g.drawImage(c, 0, 0, W, H);
+  var px = g.getImageData(0, 0, W, H).data, lum = new Float32Array(W * H), sum = 0;
+  for (var i = 0; i < W * H; i++) { lum[i] = px[i * 4] * 0.3 + px[i * 4 + 1] * 0.59 + px[i * 4 + 2] * 0.11; sum += lum[i]; }
+  var dark = (sum / (W * H)) * 0.6, cols = new Array(W).fill(0), rows = new Array(H).fill(0);
+  for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (lum[y * W + x] < dark) { cols[x]++; rows[y]++; }
+  if (cols.some(function (n) { return n > H * 0.5; })) return [0, 0, 1, 1];
+  var on = function (n) { return n >= 2; };
+  var x0 = cols.findIndex(on), y0 = rows.findIndex(on);
+  if (x0 < 0 || y0 < 0) return [0, 0, 1, 1];
+  var x1 = W - 1 - cols.slice().reverse().findIndex(on), y1 = H - 1 - rows.slice().reverse().findIndex(on);
+  var pad = 0.015, r = function (v) { return Math.round(v * 10000) / 10000; };
+  var l = Math.max(0, x0 / W - pad), rt = Math.min(1, (x1 + 1) / W + pad);
+  // Words-only sheets often fill just the left half: keep at least 60% of the width so they don't grow huge.
+  if (rt - l < 0.6) { rt = Math.min(1, l + 0.6); l = rt - 0.6; }
+  return [r(l), r(Math.max(0, y0 / H - pad)), r(rt), r(Math.min(1, (y1 + 1) / H + pad))];
 }
 // Where the lines of music are: rows of the page with ink on them, joined across small gaps
 // (chord names, staff and words stay together; the white space between lines of music splits them).
@@ -412,7 +448,8 @@ function renderMark() {
 function tapRow(e) {
   var pg = e.target.closest ? e.target.closest('.cv-page') : null;
   if (!pg) return null;
-  var k = Number(pg.dataset.k), r = pg.getBoundingClientRect(), y = (e.clientY - r.top) / r.height;
+  var k = Number(pg.dataset.k), r = pg.getBoundingClientRect();
+  var y = Number(pg.dataset.y0) + (e.clientY - r.top) / r.height * (pg.dataset.y1 - pg.dataset.y0);
   var rows = (chartOf(get(cm.id)).pages[k] || {}).rows || [], best = null, dist = 0.03;
   rows.forEach(function (row) {
     var d = y < row[0] ? row[0] - y : y > row[1] ? y - row[1] : 0;
