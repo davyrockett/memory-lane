@@ -27,6 +27,8 @@ var link = {
   ntfy: null, ntfyOn: false,
   tvOnline: null,                          // remote only: is the TV connected?
   tvId: '',                                // remote only: which TV connection said it's on
+  tried: {},                               // song versions already fetched once (see applyState)
+  latest: null,                            // the newest screen state received
   beat: 0,
   sendTimer: 0,
 };
@@ -67,9 +69,11 @@ function applyState(s) {
       renderPanel();
     } else if (s.screen === 'lyrics' && song) {
       // The other device has a newer version of this song (e.g. David just laid out its slides): fetch it first.
-      if (s.u && (song.updatedAt || '') < s.u && !link.refreshing) {
+      // Only once per version: if it isn't on GitHub yet (still saving, or saved on that device only), carry on with this one.
+      if (s.u && (song.updatedAt || '') < s.u && !link.refreshing && !link.tried[s.u]) {
+        link.tried[s.u] = 1;
         link.refreshing = true;
-        sync.run().then(function () { link.refreshing = false; applyState(s); });
+        sync.run().then(function () { link.refreshing = false; applyState(link.latest || s); });
         return;
       }
       var same = current === 'lyrics' && ly.song && ly.song.id === song.id && ly.song.updatedAt === song.updatedAt;
@@ -140,7 +144,7 @@ $('grid').addEventListener('scroll', function () {
 
 /* ---------- Sending ---------- */
 function stateChanged() {
-  if (!linked() || link.applying || current === 'editor' || current === 'slides') return;
+  if (!linked() || link.applying || current === 'editor' || current === 'slides' || current === 'chartmark') return;
   clearTimeout(link.sendTimer);
   link.sendTimer = setTimeout(sendState, 60);
 }
@@ -178,7 +182,8 @@ function receive(text, retained) {
   link.seen[msg.id] = msg.n;
   // A saved state from a long time ago (e.g. last week's visit) shouldn't move this screen.
   if (retained && Math.abs(Date.now() - msg.t) > 30 * 60 * 1000) return;
-  if (current === 'editor' || current === 'slides' || $('settings').open) return;
+  if (current === 'editor' || current === 'slides' || current === 'chartmark' || $('settings').open) return;
+  link.latest = msg.s;
   applyState(msg.s);
 }
 

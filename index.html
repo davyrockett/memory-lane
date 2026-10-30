@@ -17,7 +17,7 @@
 <script src="suite.js" defer></script>
 <script src="share.js" defer></script>
 <script>
-  window.APP_VERSION = 'v24';
+  window.APP_VERSION = 'v25';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -100,6 +100,18 @@
   </div>
   <div class="countdown scroll-only" id="countdown" hidden></div>
   <p class="countdown-note scroll-only" id="countdown-note" hidden>Space to start now</p>
+  <!-- David's chord chart, only on the remote (his iPad); the TV keeps showing the words. -->
+  <div class="chartview" id="chartview" hidden>
+    <div class="cv-head">
+      <span class="cv-title" id="cv-title"></span>
+      <span class="cv-capo" id="cv-capo" hidden></span>
+      <button class="cv-mark" id="cv-mark" title="Mark which lines of the chart go with each screen of words">✎ Mark</button>
+    </div>
+    <div class="cv-now"><b>TV now</b><span id="cv-now"></span><b>Next</b><span id="cv-next"></span></div>
+    <div class="cv-box" id="cv-box"><div class="cv-pages" id="cv-pages"></div></div>
+    <div class="cv-flash left" id="cv-flash-l" aria-hidden="true">◂</div>
+    <div class="cv-flash right" id="cv-flash-r" aria-hidden="true">▸</div>
+  </div>
   <div class="lyrics-badge" id="lyrics-badge" hidden></div>
   <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
   <nav class="ctrl" id="ctrl" aria-label="Song controls">
@@ -117,6 +129,7 @@
       <button class="cb" id="c-faster" title="Faster (↑)">+ Faster</button>
     </span>
     <button class="cb" id="c-size" title="Make the words bigger or smaller">Aa Size</button>
+    <button class="cb step-only" id="c-chart" title="Show your chart on this device (the TV keeps showing the words)" hidden>🎸 Chart</button>
     <button class="cb step-only" id="c-edit" title="Lay out this song's slides (line breaks, page breaks, repeats)">✎ Edit</button>
     <button class="cb" id="c-colors" title="Change colors (C)">◐ Colors</button>
     <button class="cb" id="c-done" title="Finish and go to the questions (Enter)">Questions ▸</button>
@@ -172,6 +185,21 @@
           <textarea id="f-lyrics" rows="18" class="mono"></textarea></label>
         <p class="cap" id="f-slides-note" hidden>This song has its own slide layout (made with ✎ Edit while singing). Changes to the
           lyrics here won't show until you use “Reset to automatic” in the slide editor.</p>
+        <fieldset class="ed-cats ed-chart"><legend>Chart <span class="cap">(shows only on your remote, never on the TV)</span></legend>
+          <div class="ch-row">
+            <img class="ch-thumb" id="f-chart-thumb" alt="" hidden>
+            <div class="grow">
+              <p class="cap" id="f-chart-status">No chart yet.</p>
+              <div class="row ch-buttons">
+                <button type="button" class="btn" id="f-chart-add">Add chart (PDF or photo)</button>
+                <button type="button" class="btn" id="f-chart-mark">Mark the chart…</button>
+                <button type="button" class="btn danger" id="f-chart-remove">Remove chart</button>
+              </div>
+            </div>
+          </div>
+          <label class="narrow ch-capo">Capo <input id="f-capo" placeholder="e.g. 4"></label>
+          <input type="file" id="f-chart-file" accept="application/pdf,.pdf,image/*" hidden>
+        </fieldset>
         <div class="row ed-actions">
           <button type="button" class="btn danger" id="f-delete">Delete song</button>
           <span class="cap" id="f-saved"></span>
@@ -214,6 +242,29 @@
         <b>Backspace</b> at the very start joins this slide onto the one before · a blank line = a gap between verses ·
         <b>Option+↑ / ↓</b> = previous / next slide · drag slides in the list to reorder.</p>
     </div>
+  </div>
+</section>
+
+<!-- Chart marks: which lines of the chart go with each section of words. -->
+<section id="chartmark" class="screen" hidden>
+  <header class="sl-head">
+    <h1 class="list-title" id="cm-title"></h1>
+    <span class="cap" id="cm-count"></span>
+    <button class="btn" id="cm-prev">◂ Previous</button>
+    <button class="btn" id="cm-next">Next ▸</button>
+    <button class="btn primary" id="cm-done">Done</button>
+  </header>
+  <div class="cm-body">
+    <div class="cm-side">
+      <div class="cm-words" id="cm-words"></div>
+      <p class="cm-help" id="cm-help"></p>
+      <label class="cm-note">Note on the chart <span class="cap">(optional, e.g. “2nd ending”)</span>
+        <input id="cm-note" autocomplete="off"></label>
+      <p><button class="btn" id="cm-clear">Clear this mark</button></p>
+      <p class="cap">Sections are the verses and choruses of the words (long verses are split in two). With two sections
+        per TV screen, your chart shows both marks together. Arrow keys ← → move between sections.</p>
+    </div>
+    <div class="cm-box" id="cm-box"><div class="cv-pages" id="cm-pages"></div></div>
   </div>
 </section>
 
@@ -283,5 +334,6 @@
 <script src="vendor/paho-mqtt.min.js"></script>
 <script src="slides.js"></script>
 <script src="remote.js"></script>
+<script src="chart.js"></script>
 </body>
 </html>

@@ -4,7 +4,8 @@
    → "Let's talk" questions → back to the list. Plus a song editor and Settings.
 
    Songs are records in one list ("items"), each stamped with when it last changed:
-     song     – title, artist, year, cats (groups), seconds (scroll time), facts, listen, ask, lyrics
+     song     – title, artist, year, cats (groups), seconds (scroll time), facts, listen, ask, lyrics,
+                (optional) slides, capo, chart (see chart.js)
      settings – categories (the order of the group buttons)
    The list lives in the public repo davyrockett/memory-lane-data (data.json). Any device can read
    it; saving changes needs David's access key (Settings). Written for older TV browsers too, so no
@@ -94,7 +95,7 @@ function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (
 /* ---------- Screens ---------- */
 var current = 'welcome';
 function show(name) {
-  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor', 'slides'].forEach(function (n) { $(n).hidden = n !== name; });
+  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor', 'slides', 'chartmark'].forEach(function (n) { $(n).hidden = n !== name; });
   if (current === 'lyrics' && name !== 'lyrics') stopLyrics();
   current = name;
   document.body.classList.remove('hide-cursor');
@@ -377,19 +378,23 @@ function buildScreens() {
   for (var i = 0; i < st.pages.length; i += per) out.push(st.pages.slice(i, i + per).map(function (_, j) { return i + j; }));
   st.screens = out;
 }
+// The song's pages (and, for a laid-out song, which pages make each slide). Chart marks are kept per page.
+function stepPages(song) {
+  var sl = customSlides(song);
+  if (!sl) return { pages: songPages(song), custom: null };
+  var pages = [], custom = [];
+  sl.forEach(function (t) {
+    var idx = [];
+    textBlocks(t).forEach(function (b) { idx.push(pages.length); pages.push(b); });
+    if (!idx.length) { idx.push(pages.length); pages.push({ chorus: false, lines: [' '] }); }
+    custom.push(idx);
+  });
+  return { pages: pages, custom: custom };
+}
 function openStep(song) {
   lsSet(K.per, '2');   // every song starts with two sections per screen ("Aa Bigger" switches for this song)
-  st = { pages: songPages(song), screens: [], i: 0, custom: null };
-  var sl = customSlides(song);
-  if (sl) {
-    st.pages = []; st.custom = [];
-    sl.forEach(function (t) {
-      var idx = [];
-      textBlocks(t).forEach(function (b) { idx.push(st.pages.length); st.pages.push(b); });
-      if (!idx.length) { idx.push(st.pages.length); st.pages.push({ chorus: false, lines: [' '] }); }
-      st.custom.push(idx);
-    });
-  }
+  var sp = stepPages(song);
+  st = { pages: sp.pages, screens: [], i: 0, custom: sp.custom };
   buildScreens();
   show('lyrics');
   keepAwake(true);
@@ -684,7 +689,7 @@ function typing() {
   return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable);
 }
 document.addEventListener('keydown', function (e) {
-  if ($('settings').open || current === 'editor' || current === 'slides' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
+  if ($('settings').open || current === 'editor' || current === 'slides' || current === 'chartmark' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === 'c' || e.key === 'C') { cycleTheme(); return; }
   if (current === 'welcome' && e.key === 'Enter' && document.activeElement === document.body) { e.preventDefault(); openList(); }
   else if (current === 'list') listKeys(e);
@@ -732,6 +737,7 @@ function edPick(id) {
   $('f-listen').value = (s.listen || []).join('\n');
   $('f-ask').value = (s.ask || []).join('\n');
   $('f-lyrics').value = s.lyrics || '';
+  $('f-capo').value = s.capo || '';
   $('f-slides-note').hidden = !customSlides(s);
   renderEdCats(s.cats || []);
   $('f-saved').textContent = '';
@@ -772,6 +778,8 @@ function edSaveNow() {
     ask: lines($('f-ask').value),
     lyrics: $('f-lyrics').value.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim(),
   });
+  var capo = $('f-capo').value.trim();
+  if (capo) rec.capo = capo; else delete rec.capo;
   var same = JSON.stringify(Object.assign({}, rec, { updatedAt: 0 })) === JSON.stringify(Object.assign({}, old, { updatedAt: 0 }));
   if (secs !== secondsFor(old)) { var m = speeds(); delete m[edId]; lsSet(K.speeds, JSON.stringify(m)); }
   if (!same) put(edId, rec);
@@ -779,7 +787,7 @@ function edSaveNow() {
   var titleChanged = rec.title !== old.title || rec.artist !== old.artist || String(rec.year) !== String(old.year);
   if (titleChanged) renderEdList();
 }
-['f-title', 'f-artist', 'f-year', 'f-seconds', 'f-facts', 'f-listen', 'f-ask', 'f-lyrics'].forEach(function (id) {
+['f-title', 'f-artist', 'f-year', 'f-seconds', 'f-facts', 'f-listen', 'f-ask', 'f-lyrics', 'f-capo'].forEach(function (id) {
   $(id).addEventListener('input', edChanged);
   $(id).addEventListener('blur', edSaveNow);
 });

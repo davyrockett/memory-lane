@@ -48,3 +48,19 @@ left, and the current slide big on the right, at the size it'll be on the TV.
 - Drag slides in the list to reorder them. **↶ Undo** undoes slide changes. **Reset to automatic** goes back to the app's own layout.
 - Changes save as you go. Click **Done** (or press Esc) to go back to singing on that slide.
 
+
+## Your chart on the iPad, words on the TV
+When your iPad is the remote (🎛 Control a TV), a song with a chart shows **your chart** on the iPad while the TV keeps
+showing only the words.
+- **Tap the right half of the chart** for the next screen of words, **the left half** to go back. The foot pedal and the
+  Back / Next buttons work too. Scrolling the chart doesn't count as a tap.
+- An **orange band** shows the lines of the chart that go with the words on the TV right now, and the chart scrolls to keep
+  it in view. The strip at the top shows what's on the TV now and what comes next, and the capo.
+- **Aa Words** in the bottom bar switches the iPad back to the words; **🎸 Chart** switches to the chart again.
+- **✎ Mark** (top right) fixes the marks for this song without leaving it.
+
+**Adding a chart:** Settings → Edit songs → the song → **Chart** → **Add chart (PDF or photo)**, and type the capo.
+Then **Mark the chart…**: for each section of words, tap the first line of music that goes with it, then the last line
+(tap the same line again if it's just one), add a note if you like ("2nd ending"), and press **Next**. Verse 2 can point
+at the same lines as verse 1. The chart shows even without marks; marks add the band. If you change a song's lyrics or
+slides later, check its marks again. Charts are saved with the songs (needs your access key), so every device has them.

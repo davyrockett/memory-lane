@@ -2,10 +2,13 @@
 //
 // IMPORTANT: whenever any file below changes, bump VERSION (tools/bump.sh).
 // That is how phones and iPads learn there's an update to download.
-const VERSION = 'v24';
+const VERSION = 'v25';
 const NAME = 'memory-lane';
 const CACHE = `${NAME}-${VERSION}`;
 const FONTS = 'memory-lane-fonts';
+const CHARTS = 'memory-lane-charts';
+// Chart pictures live in the data repo. Each has a new name whenever a chart is replaced, so a saved copy never goes stale.
+const CHART_PATH = '/davyrockett/memory-lane-data/main/charts/';
 
 const ASSETS = [
   './',
@@ -15,6 +18,7 @@ const ASSETS = [
   './share.js',
   './app.js',
   './remote.js',
+  './chart.js',
   './slides.js',
   './vendor/paho-mqtt.min.js',
   './styles.css',
@@ -64,6 +68,18 @@ self.addEventListener('fetch', (event) => {
           const fresh = fetch(request).then((res) => { cache.put(request, res.clone()); return res; });
           return cached || fresh;
         })
+      )
+    );
+    return;
+  }
+
+  if (url.hostname === 'raw.githubusercontent.com' && url.pathname.startsWith(CHART_PATH)) {
+    event.respondWith(
+      caches.open(CHARTS).then((cache) =>
+        cache.match(request).then((cached) => cached || fetch(request).then((res) => {
+          if (res.ok || res.type === 'opaque') cache.put(request, res.clone());   // pictures load as 'opaque' (another site)
+          return res;
+        }))
       )
     );
     return;

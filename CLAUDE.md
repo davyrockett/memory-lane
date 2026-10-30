@@ -142,4 +142,26 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   rules). Saves 0.8 s after a change (also rewrites `lyrics` from the slides). With custom slides, Aa Bigger/Smaller
   only changes text size (×1.35 start). TV link: editor screen isn't shared; a linked TV fetches newer song data
   (`s.u` = song updatedAt) before showing an edited song. Edit songs page shows a note on songs with custom slides.
-
+- **Chart on the remote (v25, `chart.js`, David's request 2026-10-30):** when linked as the remote, a song with a chart
+  shows David's chart (PDF or photo) instead of the words, while the TV keeps the words. Tap right half = next, left half
+  = back (click events, so scrolling the chart isn't a tap); a flash arrow confirms. An orange band shows the chart lines
+  for the TV's current screen; the chart scrolls to keep it in view. Top strip: title · n of N, capo pill, ✎ Mark,
+  "TV now" / "Next" first lines. "🎸 Chart / Aa Words" in the control bar (only on the remote; per device, `ml.chart-view`).
+  Never shown on the TV or an unlinked device. Chart view isn't part of the shared screen state.
+- **Chart data:** song `capo` (text) and `chart: { pages: [{src, w, h, rows}], marks: [...] }`. Pages are pictures in the
+  data repo's `charts/` folder (new file name on every upload; a replaced chart's old files are deleted, best effort),
+  shown from raw.githubusercontent.com and cached by sw.js (`memory-lane-charts`). A PDF becomes 1600-px-wide PNGs via
+  pdf.js 3.11.174 (`vendor/pdfjs/`, loaded only when adding a chart, not in ASSETS); a photo becomes a 1600-px JPEG.
+  `rows` = lines of music found on the page (ink rows joined across gaps under 1% of the height). `marks[i]` belongs to
+  page i of the lyrics view (`st.pages`, from `stepPages()` in app.js), so marks work with one or two sections per screen;
+  `{a, b, note}` count pages (1.25 = page 2, a quarter down). Two sections on one screen show both marks, joined where they
+  overlap. Adding a chart needs the access key (it uploads straight away). Changing the lyrics/slides can shift marks.
+- **Marking screen (`#chartmark`):** one section at a time; first tap = first line, second tap = last line (same line again
+  for one line), then Next (no auto-advance: David needs time to type a note). Taps snap to `rows`; the first tap also
+  takes thin rows just above (chord names, ending brackets) within 1.5%. Other sections' marks show grey with numbers.
+  Opened from Edit songs (starts at the first unmarked section) or ✎ Mark on the remote (returns to the same screen and
+  sections-per-screen, so the TV doesn't move).
+- **TV refetch fix (v25):** a TV that sees a newer song version (`s.u`) fetches it only once per version (`link.tried`),
+  then shows what it has; it used to refetch in a loop when the new version wasn't on GitHub yet.
+- Over the Rainbow was given its chart (from `Resounding Joy/ARC Adults/Somewhere over the Rainbow Capo 4.pdf`), capo 4
+  and marks by Claude on 2026-10-30. The "Tag" mark on the last section was Claude's guess.
