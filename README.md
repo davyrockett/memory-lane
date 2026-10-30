@@ -60,7 +60,8 @@ showing only the words.
   **🎸 Chart** goes back to your chart. The next song opens on the chart again.
 - **◫ Both** (iPad turned sideways): your chart on the left, what the TV shows on the right. It stays on for the next songs
   until you pick Chart or TV. In portrait the button is greyed out and you see the chart.
-- Sideways on **🎸 Chart**, a chart with two or more pages shows two pages side by side, like an open book.
+- Sideways on **🎸 Chart**: a chart with two or more pages shows two pages side by side, like an open book. A one-page
+  chart shows the TV's words beside it, like Both.
 - **✎ Mark** (top right) fixes the marks for this song without leaving it.
 
 **Adding a chart:** Settings → Edit songs → the song → **Chart** → **Add chart (PDF or photo)**, and type the capo.

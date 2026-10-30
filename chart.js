@@ -91,7 +91,14 @@ function chartMode() {
   if (link.role !== 'remote' || current !== 'lyrics' || !stepOn() || !chartOf(ly.song)) return 'words';
   var v = lsGet(CHART_K.view);
   if (v === 'words') return 'words';
-  return v === 'both' && sideways() ? 'both' : 'chart';
+  if (!sideways()) return 'chart';
+  // Sideways, a one-page chart leaves room for the TV's words beside it even on 🎸 Chart.
+  return v === 'both' || chartOf(ly.song).pages.length === 1 ? 'both' : 'chart';
+}
+// The button that's lit: what David picked (Chart stays lit when a one-page chart is shown beside the words).
+function pickedView() {
+  var mode = chartMode();
+  return mode === 'words' ? 'words' : mode === 'both' && lsGet(CHART_K.view) === 'both' ? 'both' : 'chart';
 }
 function chartViewOn() { return chartMode() !== 'words'; }
 function renderChartView() {
@@ -102,8 +109,8 @@ function renderChartView() {
   [['c-v-chart', 'chart'], ['c-v-tv', 'words'], ['c-v-both', 'both']].forEach(function (b) {
     var btn = $(b[0]);
     btn.disabled = !ch || (b[1] === 'both' && !sideways());
-    btn.classList.toggle('on', !!ch && mode === b[1]);
-    btn.setAttribute('aria-pressed', String(mode === b[1]));
+    btn.classList.toggle('on', !!ch && pickedView() === b[1]);
+    btn.setAttribute('aria-pressed', String(!!ch && pickedView() === b[1]));
   });
   $('c-v-both').title = !ch ? 'No chart for this song yet (add one in Edit songs)'
     : sideways() ? 'Your chart on the left, what the TV shows on the right' : 'Turn the iPad sideways to see your chart and the TV side by side';
