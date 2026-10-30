@@ -69,7 +69,8 @@ function drawBands(box, bands, cls) {
     }
   });
 }
-// Scroll so the first orange band sits near the top, unless the bands are already in view.
+// Scroll so the first orange band sits near the top, with a little of the chart above it showing,
+// unless the bands are already in view.
 function scrollToBand(scroller, cls, bottomGap) {
   var bands = scroller.querySelectorAll('.' + cls);
   if (!bands.length) return;
@@ -78,7 +79,7 @@ function scrollToBand(scroller, cls, bottomGap) {
   var bot = bands[bands.length - 1].getBoundingClientRect().bottom - sr.top + scroller.scrollTop;
   var view = scroller.clientHeight - (bottomGap || 0);
   if (top >= scroller.scrollTop + 4 && bot <= scroller.scrollTop + view) return;
-  scroller.scrollTop = Math.max(0, top - 14);
+  scroller.scrollTop = Math.max(0, top - 44);
 }
 
 /* ---------- The chart view on the remote ----------
