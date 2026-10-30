@@ -489,7 +489,17 @@ body.tv .ctrl.quiet { opacity: 0; }
 .cv-page { position: relative; background: #fff; border-radius: 6px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, .12); }
 .cv-page img { display: block; width: 100%; height: 100%; pointer-events: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .cv-band { position: absolute; left: .8%; right: .8%; border-radius: 6px; pointer-events: none; }
-.cv-now-band, .cm-cur { background: rgba(245, 124, 20, .16); border-left: 5px solid #F57C14; }
+.cm-cur { background: rgba(245, 124, 20, .16); border-left: 5px solid #F57C14; }
+/* While performing: orange brackets at the four corners, nothing over the music.
+   A band split by a page break leaves off the corners where it carries on. */
+.cv-now-band::before, .cv-now-band::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 22px;
+  border: 4px solid #F57C14; border-radius: 4px;
+}
+.cv-now-band::before { left: 0; border-right: 0; }
+.cv-now-band::after { right: 0; border-left: 0; }
+.cv-now-band.from-prev::before, .cv-now-band.from-prev::after { border-top: 0; }
+.cv-now-band.to-next::before, .cv-now-band.to-next::after { border-bottom: 0; }
 .cm-other { background: rgba(0, 0, 0, .045); border-left: 4px solid #B9B3A8; }
 .cv-band .note { position: absolute; right: 8px; top: -11px; background: #F57C14; color: #fff; font-size: 13px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
 .cv-band .num { position: absolute; left: 6px; top: 4px; color: #8A8478; font-size: 13px; font-weight: 700; }

@@ -59,7 +59,7 @@ function drawBands(box, bands, cls) {
     for (var k = Math.floor(band.a); k < band.b && k < pages.length; k++) {
       var top = Math.max(band.a, k) - k, bot = Math.min(band.b, k + 1) - k;
       if (bot - top < 0.002) continue;
-      var d = el('div', 'cv-band ' + cls);
+      var d = el('div', 'cv-band ' + cls + (first ? '' : ' from-prev') + (band.b > k + 1 ? ' to-next' : ''));
       d.style.top = (top * 100) + '%';
       d.style.height = ((bot - top) * 100) + '%';
       if (first && band.notes && band.notes.length) d.appendChild(el('span', 'note', band.notes.join(' · ')));
