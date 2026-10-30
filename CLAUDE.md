@@ -152,6 +152,7 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   changed. Both = chart on the left 58%, the TV's words on the right 42% (`#lyrics[data-chart="both"]`, "On the TV"
   label, `.cv-now` hidden); only when sideways (`sideways()`: wider than tall and ≥ 900 px), otherwise the button is greyed
   and the chart shows. In Both, `fitStep` may shrink the words to half size so lines break like on the TV.
+  **Two-up (v27):** sideways on 🎸 Chart with a chart of 2+ pages, `.cv-pages.two-up` shows the pages two across (CSS grid).
   Never shown on the TV or an unlinked device. Chart view isn't part of the shared screen state.
 - **Chart data:** song `capo` (text) and `chart: { pages: [{src, w, h, rows}], marks: [...] }`. Pages are pictures in the
   data repo's `charts/` folder (new file name on every upload; a replaced chart's old files are deleted, best effort),

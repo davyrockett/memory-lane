@@ -115,6 +115,8 @@ function renderChartView() {
   if (mode === 'words') return;
   var key = song.id + '|' + (song.updatedAt || '');
   if (cv.built !== key) { buildChartPages($('cv-pages'), ch); cv.built = key; $('cv-box').scrollTop = 0; }
+  // Sideways with the chart alone: two pages side by side, like an open book.
+  $('cv-pages').classList.toggle('two-up', mode === 'chart' && sideways() && ch.pages.length > 1);
   var n = st.screens.length, nxt = st.screens[st.i + 1];
   $('cv-title').textContent = song.title + '  ·  ' + (st.i + 1) + ' of ' + n;
   $('cv-capo').hidden = !song.capo;
