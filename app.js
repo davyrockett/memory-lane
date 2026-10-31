@@ -1049,6 +1049,11 @@ $('settings-open').addEventListener('click', function () {
   $('settings').showModal();
 });
 $('settings-close').addEventListener('click', function () { $('settings').close(); });
+// A tap outside the sheet closes it too. The sheet has padding, so check where the tap landed.
+$('settings').addEventListener('click', function (e) {
+  var r = this.getBoundingClientRect();
+  if (e.target === this && (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)) this.close();
+});
 $('open-editor').addEventListener('click', openEditor);
 $('set-update').addEventListener('click', function () {
   var ver = $('ver-line'), ub = $('set-update'), reg = window.SW_REG;
