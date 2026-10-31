@@ -172,3 +172,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   then shows what it has; it used to refetch in a loop when the new version wasn't on GitHub yet.
 - Over the Rainbow was given its chart (from `Resounding Joy/ARC Adults/Somewhere over the Rainbow Capo 4.pdf`), capo 4
   and marks by Claude on 2026-10-30. The "Tag" mark on the last section was Claude's guess.
+
+- **One TV address (2026-10-30):** www.davyrockett.com/tv (website repo `tv/`) opens this app as its TV screen when
+  David's iPad has 📺 TV on and is in this app: the TV page sets `ml.link-role` to `tv` and loads the app in a
+  frame; `/tv/mirror.js` (loaded by suite.js) calls `linkStart('remote')` here once the page has loaded. This app's
+  own link (`ml`) does the rest. Tapping "On TV" to stop also calls `linkStop()`.
