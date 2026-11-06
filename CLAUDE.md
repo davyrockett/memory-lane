@@ -179,3 +179,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   David's iPad has 📺 TV on and is in this app: the TV page sets `ml.link-role` to `tv` and loads the app in a
   frame; `/tv/mirror.js` (loaded by suite.js) calls `linkStart('remote')` here once the page has loaded. This app's
   own link (`ml`) does the rest. Tapping "On TV" to stop also calls `linkStop()`.
+- **TV presence fix (2026-11-06):** the TV screen's `on:`/`off:` (topic `/tv`) carry a per-connection name
+  (`link.cid` = `<me>.<n>`), and the TV re-says `on` when it sees any other `off` (a late last will from its own old
+  connection, or the TV screen inside www.davyrockett.com/tv closing when David switched apps). The remote ignores an
+  `off` from an unknown TV for 8 s (`link.offTimer`) while the TV screen starts up. It used to show "TV not connected"
+  while everything worked.

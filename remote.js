@@ -27,6 +27,8 @@ var link = {
   ntfy: null, ntfyOn: false,
   tvOnline: null,                          // remote only: is the TV connected?
   tvId: '',                                // remote only: which TV connection said it's on
+  offTimer: 0,                             // remote only: waiting for a TV that may still be starting up
+  cid: '', conns: 0,                       // TV only: this connection's name (me.1, me.2…), see tvSayOn
   tried: {},                               // song versions already fetched once (see applyState)
   latest: null,                            // the newest screen state received
   beat: 0,
@@ -192,10 +194,15 @@ function mqttConnect() {
   clearTimeout(link.retryTimer);
   if (!linked() || typeof Paho === 'undefined') { ntfyStart(); return; }
   var b = BROKERS[link.broker % BROKERS.length];
+  var cid = link.me + '.' + (++link.conns);
   var client = new Paho.Client(b.host, b.port, b.path, 'ml-' + link.me + '-' + Date.now().toString(36));
-  link.mqtt = client;
+  link.mqtt = client; link.cid = cid;
   client.onMessageArrived = function (m) {
-    if (m.destinationName === linkBase() + '/tv') { tvPresence(m.payloadString); return; }
+    if (m.destinationName === linkBase() + '/tv') {
+      if (link.role !== 'tv') tvPresence(m.payloadString);
+      else if (/^off:/.test(m.payloadString) && m.payloadString.slice(4) !== link.cid) tvSayOn();   // see tvSayOn
+      return;
+    }
     receive(m.payloadString, m.retained);
   };
   client.onConnectionLost = function () {
@@ -209,17 +216,11 @@ function mqttConnect() {
       if (link.mqtt !== client) return;
       link.mqttOn = true; link.fails = 0;
       client.subscribe(linkBase() + '/state');
-      if (link.role === 'remote') client.subscribe(linkBase() + '/tv');
+      client.subscribe(linkBase() + '/tv');
       if (link.role === 'tv') {
-        // Say "on" now and every 20 seconds, signed with this connection's id.
-        var sayOn = function () {
-          if (!link.mqttOn || link.mqtt !== client) return;
-          var on = new Paho.Message('on:' + link.me); on.destinationName = linkBase() + '/tv'; on.retained = true;
-          try { client.send(on); } catch (e) {}
-        };
-        sayOn();
+        tvSayOn();   // now and every 20 seconds
         clearInterval(link.beat);
-        link.beat = setInterval(sayOn, 20000);
+        link.beat = setInterval(tvSayOn, 20000);
       }
       renderLink();
     },
@@ -231,7 +232,7 @@ function mqttConnect() {
   };
   if (link.role === 'tv') {
     // If the TV drops off, the relay tells the remote.
-    var off = new Paho.Message('off:' + link.me); off.destinationName = linkBase() + '/tv'; off.retained = true;
+    var off = new Paho.Message('off:' + cid); off.destinationName = linkBase() + '/tv'; off.retained = true;
     opts.willMessage = off;
   }
   try { client.connect(opts); } catch (e) { retry(); }
@@ -243,12 +244,31 @@ function retry() {
   clearTimeout(link.retryTimer);
   link.retryTimer = setTimeout(mqttConnect, Math.min(30000, 4000 * link.fails));   // try less often if it keeps failing
 }
-// "on:<id>" / "off:<id>" from the TV. An "off" only counts if it's from the TV connection that last said "on"
-// (a reloaded TV's old connection can say "off" after the new one said "on").
+// The TV says "on:<name>" (kept by the relay, again every 20 s); the relay says "off:<name>" for it if it drops off.
+// Each connection has its own name, because the relay can notice a dropped connection late, after the TV has
+// already reconnected. Any other "off" (that old connection, or a TV screen that closed, like the one inside
+// www.davyrockett.com/tv when David switches apps) would be kept by the relay and make the remote say "TV not
+// connected" while the TV works, so the TV says "on" again straight away.
+function tvSayOn() {
+  if (link.role !== 'tv' || !link.mqttOn || !link.mqtt) return;
+  var on = new Paho.Message('on:' + link.cid); on.destinationName = linkBase() + '/tv'; on.retained = true;
+  try { link.mqtt.send(on); } catch (e) {}
+}
+// On the remote: an "off" only counts if it's from the TV connection that last said "on".
 function tvPresence(text) {
   var parts = String(text).split(':'), state = parts[0], id = parts[1] || '';
+  clearTimeout(link.offTimer);
   if (state === 'on') { link.tvId = id; link.tvOnline = true; }
-  else if (state === 'off' && (!link.tvId || id === link.tvId)) link.tvOnline = false;
+  else if (state === 'off' && id === link.tvId) link.tvOnline = false;
+  else if (state === 'off' && !link.tvId && link.tvOnline !== false) {
+    // No TV seen yet: it may still be starting (www.davyrockett.com/tv opens this app's TV screen only once this
+    // device opens the app), so give it a moment before saying it isn't connected.
+    link.offTimer = setTimeout(function () {
+      if (link.tvId || link.role !== 'remote') return;
+      link.tvOnline = false; ntfyStart(); renderLink();
+    }, 8000);
+    return;
+  }
   if (link.tvOnline === false) ntfyStart();   // the TV may be on the backup relay
   renderLink();
 }
@@ -260,7 +280,7 @@ function mqttStop() {
   if (c) {
     try {
       if (link.role === 'tv' && c.isConnected()) {
-        var off = new Paho.Message('off:' + link.me); off.destinationName = linkBase() + '/tv'; off.retained = true; c.send(off);
+        var off = new Paho.Message('off:' + link.cid); off.destinationName = linkBase() + '/tv'; off.retained = true; c.send(off);
       }
       c.disconnect();
     } catch (e) {}
@@ -287,7 +307,7 @@ function linkStart(role) {
   linkStop();
   link.role = role;
   lsSet(LINK_K.role, role);
-  link.tvOnline = null; link.tvId = '';
+  link.tvOnline = null; link.tvId = ''; clearTimeout(link.offTimer);
   document.body.classList.toggle('tv', role === 'tv');
   renderLink();
   mqttConnect();
