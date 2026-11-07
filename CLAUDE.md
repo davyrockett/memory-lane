@@ -74,6 +74,9 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   → "Let's talk" questions appear automatically 4 s after the end (←/→ step, Enter = next song).
 - Lyrics: small clickable control bar at the bottom (Songs, Restart, Pause/Play, Slower/time/Faster, Size, Colors,
   Questions) that fades to 28% while scrolling and comes back on mouse move/key/pause; thin progress line at the very bottom.
+  **Mouse pointer (2026-11-06, David: "the pointer disappears sometimes" on a TV in Chrome):** it hides only when the
+  bar fades (same 3.5 s timer, `quietSoon`), never while the mouse rests on the bar (`onBar`, iPad taps ignored), and
+  any mouse move or click brings both back. It used to vanish after 2 s on its own, even under the mouse on a button.
   Keys: Space pause/resume (click on the words too), ↑ faster / ↓ slower (10% each, saved per song), ←/→ jump, Enter
   questions, Esc back to the song list. Talk screen: Enter always = next song; "Sing it again". Songs sung today get
   "✓ Sung today" on their tile (`ml.sung`, resets each day). Scroll time = `seconds` for the whole song; on a device without the key, ↑/↓ tweaks are kept only on

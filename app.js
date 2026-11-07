@@ -535,10 +535,22 @@ function updateCtrl() {
 }
 var quietTimer;
 function wake() { $('ctrl').classList.remove('quiet'); clearTimeout(quietTimer); if (ly.running || stepOn()) quietSoon(); }
+// The mouse pointer hides with the bar (never while it rests on the bar, where it's about to click).
+var onBar = false;
 function quietSoon() {
   clearTimeout(quietTimer);
-  quietTimer = setTimeout(function () { if (ly.running || stepOn()) $('ctrl').classList.add('quiet'); }, 3500);
+  quietTimer = setTimeout(function () {
+    if (current !== 'lyrics' || !(ly.running || stepOn())) return;
+    if (onBar) { quietSoon(); return; }
+    $('ctrl').classList.add('quiet');
+    document.body.classList.add('hide-cursor');
+  }, 3500);
 }
+// (A tap on the iPad also sends a pretend mouse "enter" with no "leave", so taps don't count.)
+var lastTouch = 0;
+document.addEventListener('touchstart', function () { lastTouch = Date.now(); }, { passive: true });
+$('ctrl').addEventListener('mouseenter', function () { onBar = Date.now() - lastTouch > 1000; });
+$('ctrl').addEventListener('mouseleave', function () { onBar = false; });
 function badge(text, stay) {
   var b = $('lyrics-badge');
   b.textContent = text; b.hidden = false;
@@ -634,13 +646,13 @@ $('list-home').addEventListener('click', function () { this.blur(); openWelcome(
 // Clicking the words pauses or resumes, for anyone with a mouse instead of a keyboard.
 $('lyrics-window').addEventListener('click', function () { wake(); togglePlay(); });
 window.addEventListener('resize', function () { if (current === 'lyrics') { if (stepOn()) fitStep(); else measure(); } });
-var cursorTimer;
-document.addEventListener('mousemove', function () {
+// Any mouse move or click brings the pointer (and the bar) straight back.
+function mouseBack() {
   document.body.classList.remove('hide-cursor');
   if (current === 'lyrics') wake();
-  clearTimeout(cursorTimer);
-  if (current === 'lyrics') cursorTimer = setTimeout(function () { if (current === 'lyrics') document.body.classList.add('hide-cursor'); }, 2000);
-});
+}
+document.addEventListener('mousemove', mouseBack);
+document.addEventListener('mousedown', mouseBack);
 // Stop the screen from going to sleep in the middle of a song.
 function keepAwake(on) {
   if (!('wakeLock' in navigator)) return;
