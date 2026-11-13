@@ -17,7 +17,7 @@
 <script src="suite.js" defer></script>
 <script src="share.js" defer></script>
 <script>
-  window.APP_VERSION = 'v39';
+  window.APP_VERSION = 'v40';
   // Apply the saved colours before anything draws, so the screen never flashes the wrong colours.
   (function () {
     var t = 'light';
@@ -106,6 +106,7 @@
       <span class="cv-title" id="cv-title"></span>
       <span class="cv-capo" id="cv-capo" hidden></span>
       <button class="cv-mark" id="cv-mark" title="Mark which lines of the chart go with each screen of words">✎ Mark</button>
+      <button class="cv-mark" id="cv-ink" title="Write, draw or highlight on your chart">✏️ Notes</button>
     </div>
     <div class="cv-now"><b>TV now</b><span id="cv-now"></span><b>Next</b><span id="cv-next"></span></div>
     <div class="cv-box" id="cv-box"><div class="cv-pages" id="cv-pages"></div></div>
@@ -197,6 +198,7 @@
               <div class="row ch-buttons">
                 <button type="button" class="btn" id="f-chart-add">Add chart (PDF or photo)</button>
                 <button type="button" class="btn" id="f-chart-mark">Mark the chart…</button>
+                <button type="button" class="btn" id="f-chart-ink">Notes on the chart…</button>
                 <button type="button" class="btn danger" id="f-chart-remove">Remove chart</button>
               </div>
             </div>
@@ -272,6 +274,33 @@
   </div>
 </section>
 
+<!-- Notes on the chart: draw, highlight or type on the chart pages. -->
+<section id="chartink" class="screen" hidden>
+  <header class="sl-head">
+    <h1 class="list-title" id="ci-title"></h1>
+    <span class="cap" id="ci-count"></span>
+    <button class="btn" id="ci-prev">◂ Page</button>
+    <button class="btn" id="ci-next">Page ▸</button>
+    <button class="btn primary" id="ci-done">Done</button>
+  </header>
+  <div class="ci-tools" id="ci-tools">
+    <span class="ci-group" role="group" aria-label="Pen">
+      <button class="ci-tool ci-swatch" data-tool="pen" data-color="#D93025" title="Red pen" aria-label="Red pen" style="--sw:#D93025"></button>
+      <button class="ci-tool ci-swatch" data-tool="pen" data-color="#1A5FD0" title="Blue pen" aria-label="Blue pen" style="--sw:#1A5FD0"></button>
+      <button class="ci-tool ci-swatch" data-tool="pen" data-color="#1E1B18" title="Black pen" aria-label="Black pen" style="--sw:#1E1B18"></button>
+    </span>
+    <button class="ci-tool" data-tool="hl" title="Highlighter: colour over the music">🖍 Highlight</button>
+    <button class="ci-tool" data-tool="text" title="Type words: tap where they go, type, then Return">T Text</button>
+    <button class="ci-tool" data-tool="erase" title="Eraser: rub over a line or words to remove them">⌫ Eraser</button>
+    <span class="ci-gap"></span>
+    <button class="btn" id="ci-undo" title="Undo (⌘Z)">↶ Undo</button>
+    <button class="btn" id="ci-redo" title="Redo (⇧⌘Z)">↷ Redo</button>
+    <button class="btn danger" id="ci-clear">Clear page</button>
+  </div>
+  <p class="cap ci-help" id="ci-help"></p>
+  <div class="ci-stage" id="ci-stage"></div>
+</section>
+
 <!-- Settings -->
 <dialog id="settings" class="sheet">
   <h2>Settings</h2>
@@ -339,5 +368,6 @@
 <script src="slides.js"></script>
 <script src="remote.js"></script>
 <script src="chart.js"></script>
+<script src="ink.js"></script>
 </body>
 </html>

@@ -173,6 +173,19 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   takes thin rows just above (chord names, ending brackets) within 1.5%. Other sections' marks show grey with numbers.
   Opened from Edit songs (starts at the first unmarked section) or ✎ Mark on the remote (returns to the same screen and
   sections-per-screen, so the TV doesn't move).
+- **Notes on the chart (v40, `ink.js`, David's request 2026-11-13: "annotate my chord charts"):** screen `#chartink`,
+  opened by ✏️ Notes in the remote's chart strip (starts on the page with the orange band; Done returns to the same
+  screen via `backFromChart`, shared with the marking screen) or Edit songs → "Notes on the chart…". One page at a time:
+  whole page when it's at least 75% of the usable width (upright iPad), else across the width (max 1000 px) and it
+  scrolls. Tools: red/blue/black pen (5 px), yellow highlighter (34 px, 45%, multiply), typed text (46 px, Atkinson
+  bold, single line; tap typed words to edit, empty = delete; placed on `click` so the iPad keyboard opens), stroke
+  eraser (removes whole items, swept along the path). Undo/Redo (⌘Z / ⇧⌘Z), Clear page (tap twice), ←/→ pages, Esc = Done.
+  Last tool/colour per device (`ml.ink-tool`). Touch: one finger draws, two fingers scroll (manual pan, the sheet is
+  `touch-action: none`); once a Pencil (`pointerType 'pen'`) has touched it, fingers only scroll (palm rejection).
+  Data: `chart.pages[k].ink` = items in saved-picture pixels (so trim changes don't move them):
+  `{k:'pen'|'hl', c, w, p:[x0,y0,x1,y1…]}` (simplified, RDP 1 px) and `{k:'text', c, s, x, y, t}` (baseline-left).
+  Drawn as an SVG over the page by `inkSvg()` in chart.js (`chartPage()`), so it shows in the chart view, two-up, Both and
+  the marking screen. Saves 1.5 s after a change and on Done; replacing a chart drops the notes with the old pages.
 - **TV refetch fix (v25):** a TV that sees a newer song version (`s.u`) fetches it only once per version (`link.tried`),
   then shows what it has; it used to refetch in a loop when the new version wasn't on GitHub yet.
 - Over the Rainbow was given its chart (from `Resounding Joy/ARC Adults/Somewhere over the Rainbow Capo 4.pdf`), capo 4

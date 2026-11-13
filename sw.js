@@ -2,7 +2,7 @@
 //
 // IMPORTANT: whenever any file below changes, bump VERSION (tools/bump.sh).
 // That is how phones and iPads learn there's an update to download.
-const VERSION = 'v39';
+const VERSION = 'v40';
 const NAME = 'memory-lane';
 const CACHE = `${NAME}-${VERSION}`;
 const FONTS = 'memory-lane-fonts';
@@ -19,6 +19,7 @@ const ASSETS = [
   './app.js',
   './remote.js',
   './chart.js',
+  './ink.js',
   './slides.js',
   './vendor/paho-mqtt.min.js',
   './styles.css',

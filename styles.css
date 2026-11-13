@@ -551,3 +551,32 @@ body.cv-focus .cv-box { padding: 6px; }
   .cm-side { width: auto; max-height: 40vh; border-right: 0; border-bottom: 2px solid var(--line); }
   .cv-head { padding-left: 14px; padding-top: 44px; }
 }
+
+/* David's notes on a chart (ink.js): shown on the chart pages wherever they appear */
+.cv-ink { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.cv-ink path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cv-ink .ink-hl { stroke-opacity: .45; mix-blend-mode: multiply; }
+.cv-ink .ink-text { font-family: 'Atkinson Hyperlegible', sans-serif; font-weight: 700; }
+
+/* Writing notes on the chart */
+.ci-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 2px solid var(--line); font-size: 16px; }
+.ci-group { display: inline-flex; gap: 6px; margin-right: 4px; }
+.ci-gap { flex: 1; }
+.ci-tool { font: inherit; font-weight: 700; color: var(--ink); background: var(--panel); border: 3px solid var(--line); border-radius: 12px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.ci-tool.on { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.ci-swatch { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 3px var(--panel); }
+.ci-swatch.on { box-shadow: inset 0 0 0 3px var(--panel), 0 0 0 2px var(--accent); }
+.ci-tools .btn { font-size: 15px; padding: 6px 12px; }
+.ci-tools .btn:disabled { opacity: .4; }
+.ci-tools .btn.armed { background: #B3261E; border-color: #B3261E; color: #fff; }
+.ci-help { margin: 0; padding: 6px 16px 0; min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-stage { flex: 1; min-height: 0; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 12px; }
+.ci-sheet { flex: none; margin: 0; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ci-input { position: absolute; z-index: 2; font-family: 'Atkinson Hyperlegible', sans-serif; font-weight: 700; line-height: 1.2; padding: 0 4px;
+  background: rgba(255, 255, 255, .9); border: 2px dashed #F57C14; border-radius: 6px; outline: none; min-width: 4ch; max-width: 95%; }
+#chartink .sl-head .list-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 800px) {
+  .ci-gap { display: none; }
+  .ci-tool { padding: 5px 9px; }
+  .ci-swatch { width: 38px; height: 38px; }
+}

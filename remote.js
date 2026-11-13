@@ -146,7 +146,7 @@ $('grid').addEventListener('scroll', function () {
 
 /* ---------- Sending ---------- */
 function stateChanged() {
-  if (!linked() || link.applying || current === 'editor' || current === 'slides' || current === 'chartmark') return;
+  if (!linked() || link.applying || current === 'editor' || current === 'slides' || current === 'chartmark' || current === 'chartink') return;
   clearTimeout(link.sendTimer);
   link.sendTimer = setTimeout(sendState, 60);
 }
@@ -184,7 +184,7 @@ function receive(text, retained) {
   link.seen[msg.id] = msg.n;
   // A saved state from a long time ago (e.g. last week's visit) shouldn't move this screen.
   if (retained && Math.abs(Date.now() - msg.t) > 30 * 60 * 1000) return;
-  if (current === 'editor' || current === 'slides' || current === 'chartmark' || $('settings').open) return;
+  if (current === 'editor' || current === 'slides' || current === 'chartmark' || current === 'chartink' || $('settings').open) return;
   link.latest = msg.s;
   applyState(msg.s);
 }

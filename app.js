@@ -95,7 +95,7 @@ function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (
 /* ---------- Screens ---------- */
 var current = 'welcome';
 function show(name) {
-  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor', 'slides', 'chartmark'].forEach(function (n) { $(n).hidden = n !== name; });
+  ['welcome', 'list', 'card', 'lyrics', 'talk', 'editor', 'slides', 'chartmark', 'chartink'].forEach(function (n) { $(n).hidden = n !== name; });
   if (current === 'lyrics' && name !== 'lyrics') stopLyrics();
   current = name;
   document.body.classList.remove('hide-cursor');
@@ -703,7 +703,7 @@ function typing() {
   return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable);
 }
 document.addEventListener('keydown', function (e) {
-  if ($('settings').open || current === 'editor' || current === 'slides' || current === 'chartmark' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
+  if ($('settings').open || current === 'editor' || current === 'slides' || current === 'chartmark' || current === 'chartink' || typing() || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === 'c' || e.key === 'C') { cycleTheme(); return; }
   if (current === 'welcome' && e.key === 'Enter' && document.activeElement === document.body) { e.preventDefault(); openList(); }
   else if (current === 'list') listKeys(e);

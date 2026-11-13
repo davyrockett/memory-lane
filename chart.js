@@ -26,19 +26,58 @@ function pageTrim(p) { return p.trim || [0, 0, 1, 1]; }
 function pageRatio(p) { var t = pageTrim(p); return (p.h * (t[3] - t[1])) / (p.w * (t[2] - t[0])); }
 function buildChartPages(box, ch) {
   box.textContent = '';
-  ch.pages.forEach(function (p, k) {
-    var t = pageTrim(p), tw = t[2] - t[0], th = t[3] - t[1];
-    var w = el('div', 'cv-page');
-    w.style.aspectRatio = (p.w * tw) + ' / ' + (p.h * th);
-    w.dataset.k = k; w.dataset.y0 = t[1]; w.dataset.y1 = t[3];
-    var img = el('img');
-    img.src = chartSrc(p); img.alt = 'Chart, page ' + (k + 1); img.draggable = false;
-    // The whole page, scaled and shifted so just the trimmed part shows.
-    img.style.width = (100 / tw) + '%'; img.style.height = (100 / th) + '%';
-    img.style.left = (-t[0] / tw * 100) + '%'; img.style.top = (-t[1] / th * 100) + '%';
-    w.appendChild(img);
-    box.appendChild(w);
-  });
+  ch.pages.forEach(function (p, k) { box.appendChild(chartPage(p, k, p.ink)); });
+}
+// One page of the chart (the trimmed part), with David's notes drawn on it.
+function chartPage(p, k, ink) {
+  var t = pageTrim(p), tw = t[2] - t[0], th = t[3] - t[1];
+  var w = el('div', 'cv-page');
+  w.style.aspectRatio = (p.w * tw) + ' / ' + (p.h * th);
+  w.dataset.k = k; w.dataset.y0 = t[1]; w.dataset.y1 = t[3];
+  var img = el('img');
+  img.src = chartSrc(p); img.alt = 'Chart, page ' + (k + 1); img.draggable = false;
+  // The whole page, scaled and shifted so just the trimmed part shows.
+  img.style.width = (100 / tw) + '%'; img.style.height = (100 / th) + '%';
+  img.style.left = (-t[0] / tw * 100) + '%'; img.style.top = (-t[1] / th * 100) + '%';
+  w.appendChild(img);
+  if (ink && ink.length) w.appendChild(inkSvg(p, ink));
+  return w;
+}
+
+/* ---------- David's notes on a chart (drawn and typed in ink.js) ----------
+   page.ink = [ items ], in pixels of the saved page picture (CHART_WIDTH across), so they stay put if the trim changes:
+     { k: 'pen' | 'hl', c: colour, w: width, p: [x0, y0, x1, y1, …] }   a line drawn by hand (hl = highlighter)
+     { k: 'text', c: colour, s: size, x, y, t: 'words' }                  typed words; x, y = left end of the baseline */
+var SVG_NS = 'http://www.w3.org/2000/svg';
+function inkSvg(p, items) {
+  var t = pageTrim(p), s = document.createElementNS(SVG_NS, 'svg');
+  s.setAttribute('class', 'cv-ink');
+  s.setAttribute('viewBox', [t[0] * p.w, t[1] * p.h, (t[2] - t[0]) * p.w, (t[3] - t[1]) * p.h].join(' '));
+  s.setAttribute('preserveAspectRatio', 'none');
+  (items || []).forEach(function (it) { s.appendChild(inkEl(it)); });
+  return s;
+}
+function inkEl(it) {
+  var e;
+  if (it.k === 'text') {
+    e = document.createElementNS(SVG_NS, 'text');
+    e.setAttribute('x', it.x); e.setAttribute('y', it.y);
+    e.setAttribute('font-size', it.s); e.setAttribute('fill', it.c); e.setAttribute('class', 'ink-text');
+    e.textContent = it.t;
+    return e;
+  }
+  e = document.createElementNS(SVG_NS, 'path');
+  e.setAttribute('d', inkPath(it.p));
+  e.setAttribute('stroke', it.c); e.setAttribute('stroke-width', it.w);
+  e.setAttribute('class', it.k === 'hl' ? 'ink-hl' : 'ink-pen');
+  return e;
+}
+// A smooth line through the points (curves through the midpoints); a single tap is a dot.
+function inkPath(p) {
+  var d = 'M' + p[0] + ' ' + p[1];
+  if (p.length <= 2) return d + 'l0.1 0';
+  for (var i = 2; i < p.length - 2; i += 2) d += 'Q' + p[i] + ' ' + p[i + 1] + ' ' + (p[i] + p[i + 2]) / 2 + ' ' + (p[i + 1] + p[i + 3]) / 2;
+  return d + 'L' + p[p.length - 2] + ' ' + p[p.length - 1];
 }
 // The marks for a set of sections, joined where they overlap or touch (two sections on one screen,
 // or verse 2 pointing at the same lines as verse 1).
@@ -228,9 +267,11 @@ function renderEdChart() {
   if (ch) for (var i = 0; i < n; i++) if (ch.marks && ch.marks[i]) marked++;
   $('f-chart-status').textContent = !ch ? 'No chart yet. Add a PDF or a photo of your chart; it shows on your iPad when it’s the remote.'
     : ch.pages.length + (ch.pages.length === 1 ? ' page' : ' pages') + ' · ' + marked + ' of ' + n + ' sections marked'
-      + (marked < n ? ' (the chart shows either way; marks add the orange band)' : '');
+      + (marked < n ? ' (the chart shows either way; marks add the orange band)' : '')
+      + (ch.pages.some(function (p) { return p.ink && p.ink.length; }) ? ' · has your notes' : '');
   $('f-chart-add').textContent = ch ? 'Replace chart' : 'Add chart (PDF or photo)';
   $('f-chart-mark').disabled = !ch;
+  $('f-chart-ink').disabled = !ch;
   $('f-chart-remove').disabled = !ch;
   resetChartRemove();
 }
@@ -520,18 +561,22 @@ function saveMarks() {
 function markDone() {
   clearTimeout(cm.noteTimer);
   saveMarks();
-  var song = get(cm.id);
-  if (cm.back === 'lyrics' && song) {
+  backFromChart(cm.id, cm.back, cm.at);
+}
+// Back to where the marking or notes screen was opened from.
+function backFromChart(id, back, at) {
+  var song = get(id);
+  if (back === 'lyrics' && song) {
     // Back to the song on the same screen (and sections per screen), so the TV doesn't move.
     var per = perScreen();
     lyOpen(song);
     if (per !== perScreen()) { lsSet(K.per, String(per)); buildScreens(); }
-    st.i = Math.max(0, Math.min(st.screens.length - 1, cm.at));
+    st.i = Math.max(0, Math.min(st.screens.length - 1, at));
     renderStep(0);
   } else {
     show('editor');
     renderEdList();
-    edPick(cm.id);
+    edPick(id);
   }
 }
 $('cm-done').addEventListener('click', markDone);

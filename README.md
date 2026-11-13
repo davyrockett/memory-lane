@@ -63,6 +63,16 @@ showing only the words.
 - Sideways on **🎸 Chart**: a chart with two or more pages shows two pages side by side, like an open book. A one-page
   chart shows the TV's words beside it, like Both.
 - **✎ Mark** (top right) fixes the marks for this song without leaving it.
+- **✏️ Notes** (top right) lets you write on your chart (see below) and brings you back to the same spot.
+
+**Notes on your chart:** ✏️ Notes on the chart, or Settings → Edit songs → the song → **Notes on the chart…**.
+Pick a pen (red, blue or black), **🖍 Highlight**, **T Text** (tap where the words go, type, press Return; tap them
+later to change them) or **⌫ Eraser** (rub over a line or some words to remove them). **Undo / Redo**, and **Clear
+page** (tap twice). Use your finger or an Apple Pencil: once the Pencil has touched the page, your hand can rest on the
+screen and one finger scrolls; without it, two fingers scroll. With the iPad sideways the page fills the width and
+scrolls; upright you see the whole page. ◂ Page / Page ▸ for other pages. Your notes save by themselves, show on the
+chart while you play, and never on the TV. They're saved with the songs (with your access key), so every device has them.
+Replacing a chart starts it with no notes.
 
 **Adding a chart:** Settings → Edit songs → the song → **Chart** → **Add chart (PDF or photo)**, and type the capo.
 Then **Mark the chart…**: for each section of words, tap the first line of music that goes with it, then the last line
