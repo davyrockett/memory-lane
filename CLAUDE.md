@@ -205,3 +205,9 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   PDFs, red chord lines dropped, a bigger gap on the chart = new section; charts rendered by `tools/render-pdf.swift`,
   rows/trim as in chart.js, one mark per section from the words' positions). Facts, Listen for… and questions are
   Claude's. Only Jingle Bells has a `[Chorus]`; choruses written once on a chart show once on the TV.
+- **Holiday songs on/off (v42, David: "a separate section so they can be easily included or not depending on the
+  season"):** Settings → Holiday songs: Auto (in the list Nov 15 – Jan 6) / Always show / Hide. Saved as `holidays` in the
+  shared settings record (so every device agrees; needs the key to reach other devices). When off, songs in the
+  `HOLIDAY_GROUP` are left out of every list and the group button is hidden (`shownSongs`/`shownGroups`); Edit songs
+  still shows them. The list state over the TV link carries `hol`, and the receiving device follows it (`linkHol`,
+  cleared when this device's own setting is changed). Song Party has the same (group "Holiday Songs").
