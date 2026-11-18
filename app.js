@@ -136,7 +136,7 @@ function decade(key) { return DECADES.filter(function (d) { return d.key === key
 var GROUP_COLORS = {
   'Sing-Along Favorites': '#E8822A', 'Love Songs': '#D45D79', 'Feel-Good': '#D9A21B', 'Gentle': '#6FA36B',
   'Moon, Sun & Sky': '#4F8FC4', 'Travel & Home': '#2F9C94', 'Country & Western': '#B36A2E', 'Elvis': '#8B62B8',
-  'The Beatles': '#4467B0', 'Movies & Shows': '#B04A8C', 'Old Favorites': '#8A6E52',
+  'The Beatles': '#4467B0', 'Movies & Shows': '#B04A8C', 'Old Favorites': '#8A6E52', 'Holidays': '#C2413A',
 };
 var SPARE_COLORS = ['#5E9C8A', '#C0634B', '#7A7FC2', '#A08A2E', '#4C8DA6'];
 var DECADE_COLOR = '#6E819A';

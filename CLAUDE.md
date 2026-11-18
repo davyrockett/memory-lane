@@ -200,3 +200,8 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   connection, or the TV screen inside www.davyrockett.com/tv closing when David switched apps). The remote ignores an
   `off` from an unknown TV for 8 s (`link.offTimer`) while the TV screen starts up. It used to show "TV not connected"
   while everything worked.
+- **Holiday songs (v41, 2026-11-18):** 11 Christmas songs in a new "Holidays" group (red, `GROUP_COLORS`), added by
+  `tools/add-holiday-songs.py` from David's charts in `Resounding Joy/Elder Care/Charts/Holidays` (words read from the
+  PDFs, red chord lines dropped, a bigger gap on the chart = new section; charts rendered by `tools/render-pdf.swift`,
+  rows/trim as in chart.js, one mark per section from the words' positions). Facts, Listen for… and questions are
+  Claude's. Only Jingle Bells has a `[Chorus]`; choruses written once on a chart show once on the TV.
