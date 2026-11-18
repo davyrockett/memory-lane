@@ -149,11 +149,14 @@ def chart_lines(path):
     """Lines of the first page, top to bottom: {y (baseline, points from the top), fs, text, chord}."""
     page = pypdf.PdfReader(path).pages[0]
     H = float(page.mediabox.height)
-    frags = []
+    frags, spaces = [], []
 
     def v(text, cm, tm, fd, fs):
+        f = (round(H - (tm[5] * cm[3] + cm[5]), 1), tm[4] * cm[0] + cm[4], text, fs * (tm[3] or 1) * (cm[3] or 1))
         if text.strip():
-            frags.append((round(H - (tm[5] * cm[3] + cm[5]), 1), tm[4] * cm[0] + cm[4], text, fs * (tm[3] or 1) * (cm[3] or 1)))
+            frags.append(f)
+        elif text in (" ",):
+            spaces.append(f)   # the space before "ﬁelds" comes as its own piece
     page.extract_text(visitor_text=v)
     rows = []
     for y, x, t, fs in sorted(frags):
@@ -161,13 +164,18 @@ def chart_lines(path):
             rows[-1]["parts"].append((x, t)); rows[-1]["fs"] = max(rows[-1]["fs"], fs)
         else:
             rows.append({"y": y, "parts": [(x, t)], "fs": fs})
+    for y, x, t, fs in spaces:
+        for r in rows:
+            if abs(r["y"] - y) < 3:
+                r["parts"].append((x, t)); break
     for r in rows:
         # "snow", "ﬂ", "akes" arrive as three pieces: a ligature joins its neighbours without spaces.
-        txt, lig = "", False
-        for _, t in sorted(r["parts"]):
+        txt, glue = "", True
+        for _, t in sorted(r["parts"], key=lambda p: p[0]):
             isl = t in LIG
-            txt += ("" if (isl or lig or not txt) else " ") + t
-            lig = isl
+            sp = not t.strip()
+            txt += ("" if (isl or glue or sp) else " ") + t
+            glue = isl or sp
         for k, s in LIG.items():
             txt = txt.replace(k, s)
         r["text"] = re.sub(r"\s+", " ", txt).strip()
