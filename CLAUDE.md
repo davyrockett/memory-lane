@@ -211,3 +211,4 @@ Local test: port 8774 (`memory-lane` in daily-practice's launch.json, or `Start 
   `HOLIDAY_GROUP` are left out of every list and the group button is hidden (`shownSongs`/`shownGroups`); Edit songs
   still shows them. The list state over the TV link carries `hol`, and the receiving device follows it (`linkHol`,
   cleared when this device's own setting is changed). Song Party has the same (group "Holiday Songs").
+- **Holiday songs only in their own group (2026-11-19, David):** never in All songs, A–Z, decades or any other group (Blue Christmas is in Elvis too, but shows only under the holiday group). `listSongs()` filters by `isHoliday(x) === (group === HOLIDAY_GROUP)`; the Auto/Always/Hide setting still decides whether the holiday group button shows.

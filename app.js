@@ -58,7 +58,7 @@ function groups() {
   return list;
 }
 // Holiday songs (2026-11-18): their own group, in the song list only in season (mid-November to early January)
-// unless Settings says always or never. Stored in the settings record so every device agrees; a linked device
+// unless Settings says always or never. They never show in All songs, A–Z or other groups: only in their own. Stored in the settings record so every device agrees; a linked device
 // also takes the other one's answer (linkHol) so the TV shows the same list.
 var HOLIDAY_GROUP = 'Holidays';
 var linkHol = null;
@@ -66,7 +66,6 @@ function holidayPref() { var s = get('settings'), v = s && s.holidays; return v 
 function inSeason() { var d = new Date(), m = d.getMonth(), day = d.getDate(); return (m === 10 && day >= 15) || m === 11 || (m === 0 && day <= 6); }
 function holidaysOn() { if (linkHol != null) return linkHol; var p = holidayPref(); return p === 'auto' ? inSeason() : p === 'on'; }
 function isHoliday(song) { return (song.cats || []).indexOf(HOLIDAY_GROUP) >= 0; }
-function shownSongs() { var on = holidaysOn(); return allSongs().filter(function (x) { return on || !isHoliday(x); }); }
 function shownGroups() { var on = holidaysOn(); return groups().filter(function (g) { return on || g !== HOLIDAY_GROUP; }); }
 function setHolidays(v) {
   var s = get('settings') || { type: 'settings', categories: [] };
@@ -195,7 +194,8 @@ function mixKey(id) {
   return h >>> 0;
 }
 function listSongs() {
-  var s = shownSongs();
+  // Holiday songs show only in their own group (never in All songs, A–Z or any other group; David, 2026-11-19).
+  var s = allSongs().filter(function (x) { return isHoliday(x) === (group === HOLIDAY_GROUP); });
   if (group !== 'az') {
     var sung = sungToday();
     s = s.slice().sort(function (a, b) {
